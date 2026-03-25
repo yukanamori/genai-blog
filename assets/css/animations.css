@@ -1,0 +1,104 @@
+/* =============================================================
+   ANIMATIONS.CSS — Keyframes & Scroll Reveal
+   ============================================================= */
+
+/* ── Keyframes ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Page Load Animation ── */
+.site-header,
+.layout-index > *,
+.layout-article > * {
+  animation: fadeUp var(--transition-slow) ease both;
+}
+
+.site-header { animation-delay: 0ms; }
+.index-hero  { animation-delay: 50ms; }
+.search-bar  { animation-delay: 80ms; }
+.article-list { animation-delay: 100ms; }
+.article-toc  { animation-delay: 50ms; }
+.article-main { animation-delay: 80ms; }
+
+/* ── Scroll Reveal (.js-reveal) ── */
+.js-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.js-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* h2 headings: slide in from left */
+.article-body h2.js-reveal {
+  transform: translateX(-16px);
+}
+
+.article-body h2.js-reveal.is-visible {
+  transform: translateX(0);
+}
+
+/* ── Hover Effects ── */
+.article-card {
+  transition:
+    border-left-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.article-nav__item {
+  transition: border-color var(--transition-fast);
+}
+
+/* ── TOC active item transition ── */
+.article-toc__item a {
+  transition:
+    color var(--transition-fast),
+    border-left-color var(--transition-fast);
+}
+
+/* ── Search result appear ── */
+.search-results.is-active {
+  animation: fadeIn 150ms ease both;
+}
+
+/* ── Reduced motion: disable all ── */
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .site-header,
+  .layout-index > *,
+  .layout-article > * {
+    animation: none;
+  }
+}

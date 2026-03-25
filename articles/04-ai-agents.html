@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIエージェント設計パターン — GenAI Engineering</title>
+  <meta name="description" content="LLMに「考えて行動させる」システム設計">
+  <meta property="og:title" content="AIエージェント設計パターン — GenAI Engineering">
+  <meta property="og:description" content="LLMに「考えて行動させる」システム設計">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/04-ai-agents.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/04-ai-agents.html">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
+
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
+    </div>
+  </div>
+</header>
+
+<!-- Article Layout -->
+<div class="layout-article">
+
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">エージェントとは何か</a></li>
+      <li><a href="#section-2">ReActパターンとTool Use</a></li>
+      <li><a href="#section-3">マルチエージェントアーキテクチャ</a></li>
+      <li><a href="#section-4">ツール設計の原則</a></li>
+      <li><a href="#section-5">リスクと制御</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>AIエージェント設計パターン</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">04</p>
+      <h1 class="article-header__title">AIエージェント設計パターン</h1>
+      <p class="article-header__subtitle">LLMに「考えて行動させる」システム設計</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">14 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">エージェント</span>
+        <span class="article-header__meta-item tag">Tool Use</span>
+        <span class="article-header__meta-item tag">ReAct</span>
+        <span class="article-header__meta-item tag">マルチエージェント</span>
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <article class="article-body">
+
+      <p>
+        「ChatGPTに指示すれば何でもやってくれる」——そう期待したものの、1回の質問・回答では完結しない複雑なタスクに対して限界を感じた開発者は多いはずです。コードを書かせて実行させてエラーを直させる、ドキュメントを検索してまとめてメールの下書きを作る——こうした<strong>複数ステップの自律的な作業</strong>を可能にするのがAIエージェントです。本記事では、AIエージェントの設計パターンを実装観点から体系的に解説します。
+      </p>
+
+      <!-- ============================================================
+           Section 1: エージェントとは何か
+           ============================================================ -->
+      <h2 id="section-1">1. エージェントとは何か</h2>
+
+      <p>
+        AIエージェントを正しく設計するには、まず「チャットbot」との本質的な違いを理解する必要があります。
+      </p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="チャットbotとエージェントの比較図">
+          <defs>
+            <marker id="arr-cmp" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+            <marker id="arr-cmp2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#888884"/>
+            </marker>
+          </defs>
+          <rect width="700" height="200" fill="#0D0D0D"/>
+
+          <!-- Left box: チャットbot -->
+          <rect x="20" y="20" width="300" height="160" rx="6" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="170" y="46" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#888884">チャットbot</text>
+
+          <!-- Single-turn flow -->
+          <rect x="40" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="80" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">入力</text>
+
+          <line x1="120" y1="76" x2="156" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
+
+          <rect x="158" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="198" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">LLM</text>
+
+          <line x1="238" y1="76" x2="274" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
+
+          <rect x="276" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="316" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">出力</text>
+
+          <text x="170" y="125" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">1回で完結する問答</text>
+          <text x="170" y="145" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">ツール・外部システムなし</text>
+          <text x="170" y="165" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">状態を持たない</text>
+
+          <!-- Right box: エージェント -->
+          <rect x="380" y="20" width="300" height="160" rx="6" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="530" y="46" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#FF3D00">エージェント</text>
+
+          <!-- Loop flow -->
+          <rect x="395" y="60" width="55" height="28" rx="3" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="422" y="78" text-anchor="middle" font-family="monospace" font-size="10" fill="#E8E8E2">入力</text>
+
+          <line x1="450" y1="74" x2="468" y2="74" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-cmp)"/>
+
+          <rect x="470" y="60" width="55" height="28" rx="3" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="497" y="78" text-anchor="middle" font-family="monospace" font-size="10" fill="#FF3D00">思考</text>
+
+          <line x1="525" y1="74" x2="543" y2="74" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-cmp)"/>
+
+          <rect x="545" y="60" width="60" height="28" rx="3" fill="#2A2A2A" stroke="#FF3D00" stroke-width="1"/>
+          <text x="575" y="78" text-anchor="middle" font-family="monospace" font-size="10" fill="#E8E8E2">ツール実行</text>
+
+          <!-- Return arc -->
+          <path d="M605 88 Q640 115 575 130 Q510 145 497 130 Q484 115 497 100" fill="none" stroke="#FF3D00" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-cmp)"/>
+          <text x="630" y="110" font-family="monospace" font-size="9" fill="#FF3D00">観察</text>
+
+          <text x="530" y="155" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">思考→行動→観察 のループ → 出力</text>
+        </svg>
+        <figcaption>図1: チャットbotとAIエージェントの本質的違い — 単一問答 vs 自律的なループ処理</figcaption>
+      </div>
+
+      <p>
+        チャットbotは「入力に対して1回応答を返す」静的な処理です。一方、AIエージェントは<strong>思考→ツール実行→結果の観察→再思考</strong>というループを自律的に繰り返し、目標を達成するまで処理を継続します。外部APIの呼び出し、コードの実行、ファイルの操作といった「行動」を伴う点が根本的に異なります。
+      </p>
+
+      <h3>エージェントが持つ3つの能力</h3>
+
+      <ul>
+        <li><strong>計画（Planning）</strong> — タスクを複数のサブタスクに分解し、実行順序を決定する能力。「Pythonスクリプトを書いて実行し、エラーがあれば修正する」という計画を立てられる</li>
+        <li><strong>ツール使用（Tool Use）</strong> — 外部システム（API、データベース、コード実行環境）を呼び出して情報を取得・操作する能力。LLM単体では持てない「行動力」を与える</li>
+        <li><strong>メモリ（Memory）</strong> — 短期メモリ（会話コンテキスト）と長期メモリ（ベクトルDB・KV store）を使い分けて、過去の作業状態を参照する能力</li>
+      </ul>
+
+      <h3>実用例：コード生成の自律ループ</h3>
+
+      <p>
+        AIエージェントの分かりやすい例が、コード生成・実行・デバッグの自律ループです。開発者が「CSVを読み込んで売上グラフを生成するPythonスクリプトを書いて」と指示すると、エージェントは①コードを生成し②サンドボックスで実行し③エラーメッセージを観察して④修正を加え⑤成功するまでループします。人間の介入なしに、数回の試行で動作するコードを納品できます。
+      </p>
+
+      <!-- ============================================================
+           Section 2: ReActパターンとTool Use
+           ============================================================ -->
+      <h2 id="section-2">2. ReActパターンとTool Use</h2>
+
+      <p>
+        AIエージェントの最も基礎的かつ普及している設計パターンが<strong>ReAct（Reason + Act）</strong>です。2022年にGoogle Researchが発表した手法で、LLMに「思考の言語化」と「行動」を交互に行わせることで、複雑なタスクに対する性能を大幅に向上させました。
+      </p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ReActループ図：思考・行動・観察の循環フロー">
+          <defs>
+            <marker id="arr-react" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#FF3D00"/>
+            </marker>
+          </defs>
+          <rect width="400" height="400" fill="#0D0D0D"/>
+
+          <!-- Center circle -->
+          <circle cx="200" cy="200" r="30" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="200" y="197" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">ReAct</text>
+          <text x="200" y="210" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">Loop</text>
+
+          <!-- Node 1: 思考 (top) -->
+          <rect x="148" y="40" width="104" height="52" rx="8" fill="#1A1A1A" stroke="#FF3D00" stroke-width="2"/>
+          <text x="200" y="62" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#FF3D00">思考</text>
+          <text x="200" y="80" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">Reason</text>
+
+          <!-- Node 2: 行動 (right) -->
+          <rect x="290" y="174" width="104" height="52" rx="8" fill="#1A1A1A" stroke="#FF3D00" stroke-width="2"/>
+          <text x="342" y="196" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#FF3D00">行動</text>
+          <text x="342" y="214" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">Act</text>
+
+          <!-- Node 3: 観察 (bottom) -->
+          <rect x="148" y="308" width="104" height="52" rx="8" fill="#1A1A1A" stroke="#FF3D00" stroke-width="2"/>
+          <text x="200" y="330" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#FF3D00">観察</text>
+          <text x="200" y="348" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">Observe</text>
+
+          <!-- Node 4: 再思考 (left) -->
+          <rect x="6" y="174" width="104" height="52" rx="8" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="58" y="196" text-anchor="middle" font-family="monospace" font-size="12" fill="#888884">再思考</text>
+          <text x="58" y="214" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">Re-Reason</text>
+
+          <!-- Arrows between nodes (clockwise) -->
+          <!-- 思考 → 行動 (top-right arc) -->
+          <path d="M252 75 Q320 75 320 174" fill="none" stroke="#FF3D00" stroke-width="2" marker-end="url(#arr-react)"/>
+          <text x="308" y="128" font-family="monospace" font-size="10" fill="#FF3D00">ツール呼び出し</text>
+
+          <!-- 行動 → 観察 (right-bottom arc) -->
+          <path d="M342 226 Q342 308 252 325" fill="none" stroke="#FF3D00" stroke-width="2" marker-end="url(#arr-react)"/>
+          <text x="305" y="290" font-family="monospace" font-size="10" fill="#FF3D00">実行結果</text>
+
+          <!-- 観察 → 再思考 (bottom-left arc) -->
+          <path d="M148 325 Q80 325 80 226" fill="none" stroke="#FF3D00" stroke-width="2" marker-end="url(#arr-react)"/>
+          <text x="48" y="290" font-family="monospace" font-size="10" fill="#888884">結果分析</text>
+
+          <!-- 再思考 → 思考 (left-top arc) -->
+          <path d="M80 174 Q80 75 148 66" fill="none" stroke="#FF3D00" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-react)"/>
+          <text x="40" y="128" font-family="monospace" font-size="10" fill="#888884">継続判断</text>
+        </svg>
+        <figcaption>図2: ReActループ — 思考（Reason）→ 行動（Act）→ 観察（Observe）の繰り返しで目標を達成</figcaption>
+      </div>
+
+      <h3>Function Calling / Tool Use の定義</h3>
+
+      <p>
+        現代のLLM APIはFunction Calling（またはTool Use）という仕組みを提供しており、開発者が用意したツールの定義をLLMに渡すと、LLMが「このツールをこのパラメータで呼び出す」という判断を下せるようになります。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json — Tool定義のスキーマ例</span>
+        </div>
+        <pre><code>{
+  "name": "search_documents",
+  "description": "社内ドキュメントを検索する",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "検索クエリ（自然言語で記述）"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "返す結果の最大件数",
+        "default": 5
+      }
+    },
+    "required": ["query"]
+  }
+}</code></pre>
+      </div>
+
+      <h3>Pythonによるエージェントループの実装</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — ReActパターンのエージェントループ実装</span>
+        </div>
+        <pre><code>import json
+from openai import OpenAI
+
+client = OpenAI()
+
+# ツール定義
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_documents",
+            "description": "社内ドキュメントを検索する",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "検索クエリ"},
+                    "limit": {"type": "integer", "default": 5},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_code",
+            "description": "Pythonコードをサンドボックスで実行する",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "description": "実行するPythonコード"},
+                },
+                "required": ["code"],
+            },
+        },
+    },
+]
+
+def execute_tool(name: str, args: dict) -> str:
+    """ツールを実行して結果を文字列で返す"""
+    if name == "search_documents":
+        # 実際はRAGパイプラインを呼び出す
+        return f"検索結果（クエリ: {args['query']}）: ドキュメント1, ドキュメント2"
+    elif name == "run_code":
+        # 実際はサンドボックス環境でコードを実行する
+        return "実行成功: 出力結果..."
+    return f"エラー: 未知のツール {name}"
+
+def run_agent(user_message: str, max_iterations: int = 10) -> str:
+    """ReActループでエージェントを実行する"""
+    messages = [{"role": "user", "content": user_message}]
+
+    for iteration in range(max_iterations):
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
+        )
+
+        message = response.choices[0].message
+
+        # ツール呼び出しがなければ最終回答
+        if not message.tool_calls:
+            return message.content
+
+        # ツール呼び出しがある場合は実行してループを継続
+        messages.append(message)  # アシスタントのメッセージを追加
+
+        for tool_call in message.tool_calls:
+            args = json.loads(tool_call.function.arguments)
+            result = execute_tool(tool_call.function.name, args)
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": result,
+            })
+
+    return "最大反復数に達しました。タスクを完了できませんでした。"
+
+# 使用例
+answer = run_agent("有給休暇の申請方法を調べて要約してください")
+print(answer)</code></pre>
+      </div>
+
+      <!-- ============================================================
+           Section 3: マルチエージェントアーキテクチャ
+           ============================================================ -->
+      <h2 id="section-3">3. マルチエージェントアーキテクチャ</h2>
+
+      <p>
+        単一のエージェントでは処理しきれない複雑なタスクや、並列実行でスループットを上げたいシナリオでは、<strong>マルチエージェントアーキテクチャ</strong>が有効です。代表的な3つのパターンを紹介します。
+      </p>
+
+      <h3>3つのアーキテクチャパターン</h3>
+
+      <p>
+        <strong>1. Single Agent</strong> — 1つのエージェントがすべてのツールを持ち、すべてのタスクを処理します。実装がシンプルで、小〜中規模のタスクに適しています。ツールが増えすぎるとコンテキストが肥大化し、性能が下がる欠点があります。
+      </p>
+
+      <p>
+        <strong>2. Orchestrator + Workers</strong> — オーケストレーターエージェントがタスクを分解し、専門化されたワーカーエージェントに割り振ります。ワーカーは並列実行でき、役割分担によって各エージェントが持つコンテキストを小さく保てます。中〜大規模の業務自動化に適しています。
+      </p>
+
+      <p>
+        <strong>3. Hierarchical</strong> — オーケストレーターが複数のサブオーケストレーターを持ち、それぞれが複数のワーカーを管理する多階層構造です。非常に複雑なタスク分解が可能ですが、設計・デバッグコストが高くなります。
+      </p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Orchestrator + Workersのマルチエージェント構成図">
+          <defs>
+            <marker id="arr-multi" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+            <marker id="arr-multi-rev" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+              <polygon points="8 0, 0 3, 8 6" fill="#888884"/>
+            </marker>
+          </defs>
+          <rect width="600" height="350" fill="#0D0D0D"/>
+
+          <!-- Orchestrator (center top) -->
+          <rect x="200" y="30" width="200" height="64" rx="8" fill="#FF3D00"/>
+          <text x="300" y="56" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#0D0D0D">Orchestrator</text>
+          <text x="300" y="76" text-anchor="middle" font-family="monospace" font-size="11" fill="#0D0D0D">タスク分解・調整</text>
+
+          <!-- Worker 1: RAG Agent -->
+          <rect x="30" y="200" width="150" height="64" rx="6" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="105" y="225" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#FF3D00">RAG Agent</text>
+          <text x="105" y="245" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">ドキュメント検索</text>
+          <text x="105" y="258" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">知識ベース照会</text>
+
+          <!-- Worker 2: Code Agent -->
+          <rect x="225" y="200" width="150" height="64" rx="6" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="300" y="225" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#FF3D00">Code Agent</text>
+          <text x="300" y="245" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">コード生成・実行</text>
+          <text x="300" y="258" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">デバッグ</text>
+
+          <!-- Worker 3: Review Agent -->
+          <rect x="420" y="200" width="150" height="64" rx="6" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="495" y="225" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#FF3D00">Review Agent</text>
+          <text x="495" y="245" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">品質チェック</text>
+          <text x="495" y="258" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">セキュリティ検査</text>
+
+          <!-- Arrows: Orchestrator → Workers -->
+          <line x1="240" y1="94" x2="130" y2="198" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-multi)"/>
+          <line x1="300" y1="94" x2="300" y2="198" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-multi)"/>
+          <line x1="360" y1="94" x2="470" y2="198" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-multi)"/>
+
+          <!-- Return arrows: Workers → Orchestrator (dashed) -->
+          <line x1="120" y1="200" x2="248" y2="96" stroke="#888884" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-multi-rev)"/>
+          <line x1="300" y1="200" x2="300" y2="96" stroke="#888884" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-multi-rev)"/>
+          <line x1="480" y1="200" x2="352" y2="96" stroke="#888884" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-multi-rev)"/>
+
+          <!-- Labels for arrows -->
+          <text x="160" y="155" font-family="monospace" font-size="9" fill="#FF3D00">サブタスク割当</text>
+          <text x="310" y="155" font-family="monospace" font-size="9" fill="#FF3D00">サブタスク割当</text>
+          <text x="390" y="155" font-family="monospace" font-size="9" fill="#FF3D00">サブタスク割当</text>
+
+          <!-- Result aggregation note -->
+          <rect x="150" y="295" width="300" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="300" y="315" text-anchor="middle" font-family="monospace" font-size="11" fill="#888884">結果を統合して最終回答を生成</text>
+          <line x1="300" y1="264" x2="300" y2="293" stroke="#888884" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr-multi-rev)"/>
+        </svg>
+        <figcaption>図3: Orchestrator + Workersパターン — 中央のオーケストレーターが専門化されたワーカーエージェントを調整する</figcaption>
+      </div>
+
+      <h3>パターン比較</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>パターン</th>
+            <th>複雑さ</th>
+            <th>適用シナリオ</th>
+            <th>コスト傾向</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Single Agent</td>
+            <td>低</td>
+            <td>PoC、単純タスク自動化</td>
+            <td>低</td>
+          </tr>
+          <tr>
+            <td>Orchestrator + Workers</td>
+            <td>中</td>
+            <td>並列処理が必要な中〜大規模業務</td>
+            <td>中〜高</td>
+          </tr>
+          <tr>
+            <td>Hierarchical</td>
+            <td>高</td>
+            <td>大規模・複雑なタスク分解が必要な場合</td>
+            <td>高</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ============================================================
+           Section 4: ツール設計の原則
+           ============================================================ -->
+      <h2 id="section-4">4. ツール設計の原則</h2>
+
+      <p>
+        エージェントに与えるツールの設計品質は、システム全体の信頼性に直結します。「動くツール」ではなく「安全で信頼性の高いツール」を設計するための原則を解説します。
+      </p>
+
+      <h3>べき等性（Idempotency）</h3>
+
+      <p>
+        <strong>べき等性</strong>とは「同じ操作を何度実行しても結果が同じになる」性質です。エージェントはネットワークエラーやLLMの判断ブレなどで同じツールを複数回呼び出すことがあります。データ挿入ツールが冪等でないと、同じレコードが重複して登録される事故につながります。
+      </p>
+
+      <h3>ツールの粒度</h3>
+
+      <p>
+        ツールが細かすぎると管理対象が増えLLMがどれを使うか迷います。粗すぎると柔軟性が下がり、LLMが意図しない大きな操作を一括実行するリスクが生まれます。<strong>「1ツール1責務」を原則</strong>とし、操作の結果が観測・確認できる粒度に収めることが推奨です。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — べき等性とエラーハンドリングを備えたツール実装例</span>
+        </div>
+        <pre><code>import hashlib
+import time
+from functools import wraps
+from typing import Any
+
+class ToolError(Exception):
+    """ツール実行エラーの基底クラス"""
+    def __init__(self, message: str, retryable: bool = False):
+        super().__init__(message)
+        self.retryable = retryable
+
+def with_retry(max_retries: int = 3, delay: float = 1.0):
+    """リトライデコレータ：retryable=TrueのToolErrorのみリトライ"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_error = None
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except ToolError as e:
+                    last_error = e
+                    if not e.retryable or attempt == max_retries - 1:
+                        raise
+                    time.sleep(delay * (attempt + 1))  # Exponential backoff
+            raise last_error
+        return wrapper
+    return decorator
+
+# 冪等キーを使った重複排除
+_processed_operations: set[str] = set()
+
+def make_idempotency_key(*args) -> str:
+    """引数からべき等キーを生成する"""
+    payload = str(args).encode()
+    return hashlib.sha256(payload).hexdigest()[:16]
+
+@with_retry(max_retries=3)
+def create_ticket(title: str, description: str, priority: str = "medium") -> dict:
+    """
+    チケットを作成する（べき等実装）
+    同じ title + description + priority の組み合わせは重複作成しない
+    """
+    idempotency_key = make_idempotency_key(title, description, priority)
+
+    # 既に処理済みなら早期リターン
+    if idempotency_key in _processed_operations:
+        return {"status": "already_exists", "idempotency_key": idempotency_key}
+
+    # バリデーション
+    if not title.strip():
+        raise ToolError("タイトルが空です", retryable=False)
+    if priority not in ("low", "medium", "high", "critical"):
+        raise ToolError(f"無効な優先度: {priority}", retryable=False)
+
+    try:
+        # 実際のチケット作成APIを呼び出す（例）
+        result = _call_ticket_api(title=title, description=description, priority=priority)
+        _processed_operations.add(idempotency_key)
+        return {"status": "created", "ticket_id": result["id"]}
+    except ConnectionError as e:
+        # ネットワークエラーはリトライ可能
+        raise ToolError(f"API接続エラー: {e}", retryable=True) from e
+
+def _call_ticket_api(**kwargs) -> dict:
+    """チケットAPIのスタブ（実際の実装に置き換える）"""
+    return {"id": f"TKT-{hash(str(kwargs)) % 10000:04d}"}</code></pre>
+      </div>
+
+      <div class="callout callout--warning">
+        <p class="callout__heading">エージェントに与えてはいけないツール</p>
+        <p>
+          以下の<strong>不可逆な操作</strong>をツールとして直接エージェントに与えることは避けてください。誤った判断やループ暴走時の被害が取り返しのつかないものになります。
+        </p>
+        <ul>
+          <li>本番データベースへの直接DELETE / DROPクエリ</li>
+          <li>メール・通知の自動送信（大量送信事故のリスク）</li>
+          <li>クラウドリソースの削除・変更（S3バケット削除、EC2終了など）</li>
+          <li>外部決済・契約APIの実行</li>
+          <li>本番環境へのデプロイコマンド</li>
+        </ul>
+        <p>
+          これらが必要な場合は必ずHuman-in-the-loopで人間の承認を挟むか、ステージング環境のみを対象としたツールを提供してください。
+        </p>
+      </div>
+
+      <!-- ============================================================
+           Section 5: リスクと制御
+           ============================================================ -->
+      <h2 id="section-5">5. リスクと制御</h2>
+
+      <p>
+        エージェントは自律的に動作するため、通常のAPIやバッチ処理とは異なる種類のリスクを持ちます。設計段階でこれらのリスクを認識し、制御機構を組み込むことが安全な運用の前提です。
+      </p>
+
+      <h3>主要リスクと対策</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>リスク</th>
+            <th>対策</th>
+            <th>実装方法</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ループ暴走</td>
+            <td>最大反復数制限</td>
+            <td><code>max_iterations=10</code></td>
+          </tr>
+          <tr>
+            <td>コスト爆発</td>
+            <td>トークン予算管理</td>
+            <td><code>token_budget=50000</code></td>
+          </tr>
+          <tr>
+            <td>不正ツール実行</td>
+            <td>承認ゲート（Human-in-the-loop）</td>
+            <td><code>human_approval=True</code></td>
+          </tr>
+          <tr>
+            <td>機密情報漏洩</td>
+            <td>出力フィルタリング</td>
+            <td>PII検出 + マスク処理</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>ループ暴走とコスト爆発への対策</h3>
+
+      <p>
+        エージェントが特定の状況でループから抜け出せなくなる「ループ暴走」は最も頻発する問題です。原因はツールが常に失敗を返す、LLMが同じアクションを繰り返す判断をするなど様々です。<strong>最大反復数の上限設定は必須</strong>です。またトークン使用量は非同期でモニタリングし、予算超過時に即座に停止する仕組みも併せて実装します。
+      </p>
+
+      <h3>Human-in-the-loop設計パターン</h3>
+
+      <p>
+        高リスク操作（メール送信、本番DB更新、外部APIコール等）の前に人間の確認を挟む<strong>Human-in-the-loop</strong>パターンは、エージェントを業務で安全に活用するための重要な設計です。エージェントは「提案」を生成し、人間が「承認・却下・修正」を行う、という役割分担にすることで、意思決定の責任の所在を明確にできます。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — 安全制約を備えたエージェントラッパー</span>
+        </div>
+        <pre><code>import time
+from dataclasses import dataclass, field
+
+@dataclass
+class AgentConfig:
+    max_iterations: int = 10
+    token_budget: int = 50_000
+    require_approval_for: list[str] = field(default_factory=lambda: [
+        "send_email", "create_ticket", "deploy", "delete_record"
+    ])
+    pii_mask: bool = True
+
+class SafeAgent:
+    def __init__(self, config: AgentConfig):
+        self.config = config
+        self._iterations = 0
+        self._tokens_used = 0
+
+    def _check_limits(self) -> None:
+        if self._iterations >= self.config.max_iterations:
+            raise RuntimeError(
+                f"最大反復数 ({self.config.max_iterations}) に達しました。"
+                "タスクを分割するか max_iterations を増やしてください。"
+            )
+        if self._tokens_used >= self.config.token_budget:
+            raise RuntimeError(
+                f"トークン予算 ({self.config.token_budget:,}) を超過しました。"
+                f"使用済み: {self._tokens_used:,}"
+            )
+
+    def _request_approval(self, tool_name: str, args: dict) -> bool:
+        """人間の承認を要求する（実際はSlack通知やUIで実装）"""
+        print(f"\n[承認要求] ツール: {tool_name}")
+        print(f"引数: {args}")
+        response = input("実行を承認しますか？ (y/n): ").strip().lower()
+        return response == "y"
+
+    def _mask_pii(self, text: str) -> str:
+        """個人情報をマスクする（実際はPresidioなどを使用）"""
+        import re
+        # メールアドレスのマスク例
+        text = re.sub(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", "[EMAIL]", text)
+        # 電話番号のマスク例
+        text = re.sub(r"\d{2,4}-\d{2,4}-\d{4}", "[PHONE]", text)
+        return text
+
+    def execute_tool(self, tool_name: str, args: dict) -> str:
+        """ツールを安全に実行する"""
+        self._check_limits()
+
+        # 承認が必要なツールの確認
+        if tool_name in self.config.require_approval_for:
+            if not self._request_approval(tool_name, args):
+                return f"ツール '{tool_name}' の実行はユーザーによって却下されました。"
+
+        # ツールを実行（省略）
+        result = f"ツール '{tool_name}' の実行結果"
+
+        # PIIマスク
+        if self.config.pii_mask:
+            result = self._mask_pii(result)
+
+        self._iterations += 1
+        return result
+
+# 使用例
+config = AgentConfig(
+    max_iterations=10,
+    token_budget=50_000,
+    require_approval_for=["send_email", "create_ticket"],
+    pii_mask=True,
+)
+agent = SafeAgent(config)</code></pre>
+      </div>
+
+      <!-- Summary Box -->
+      <div class="article-summary">
+        <p class="article-summary__heading">この記事のまとめ</p>
+        <ol class="article-summary__list">
+          <li>AIエージェントはチャットbotと異なり、<strong>思考→ツール実行→観察のループ</strong>を自律的に繰り返します。計画・ツール使用・メモリの3能力を持ち、複数ステップのタスクを自律実行できます</li>
+          <li><strong>ReActパターン</strong>はエージェント設計の基本。Reason（思考）→ Act（行動）→ Observe（観察）のループをFunction Callingで実装します。LLMにツール定義スキーマを渡すだけで判断させられます</li>
+          <li>複雑なタスクには<strong>Orchestrator + Workers</strong>パターンが有効。専門化されたワーカーに役割を分担させることで、各エージェントのコンテキストを小さく保ちつつ並列処理を実現できます</li>
+          <li>ツールは<strong>べき等性・エラーハンドリング・適切な粒度</strong>の3原則で設計します。不可逆な操作（本番DB削除・メール送信等）はエージェントに直接与えず、Human-in-the-loopを挟む設計が必須です</li>
+          <li>ループ暴走・コスト爆発・機密情報漏洩のリスクに対し、<strong>最大反復数・トークン予算・出力フィルタリング</strong>という3つの制御機構を設計段階から組み込んでください</li>
+        </ol>
+      </div>
+
+    </article>
+
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="03-rag.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">RAG（検索拡張生成）設計・実装ガイド</span>
+      </a>
+      <a href="05-code-generation-review.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">コード生成・レビュー自動化</span>
+      </a>
+    </nav>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

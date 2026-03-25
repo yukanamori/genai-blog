@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロンプトエンジニアリング実践ガイド — GenAI Engineering</title>
+  <meta name="description" content="AIへの「正しい指示の出し方」は設計スキルである">
+  <meta property="og:title" content="プロンプトエンジニアリング実践ガイド — GenAI Engineering">
+  <meta property="og:description" content="AIへの「正しい指示の出し方」は設計スキルである">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/02-prompt-engineering.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/02-prompt-engineering.html">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
+
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
+    </div>
+  </div>
+</header>
+
+<!-- Article Layout -->
+<div class="layout-article">
+
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">プロンプトの構造分解</a></li>
+      <li><a href="#section-2">主要テクニック</a></li>
+      <li><a href="#section-3">業務別プロンプトパターン</a></li>
+      <li><a href="#section-4">失敗パターンと修正</a></li>
+      <li><a href="#section-5">パラメータ制御とバージョン管理</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>プロンプトエンジニアリング実践ガイド</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">02</p>
+      <h1 class="article-header__title">プロンプトエンジニアリング実践ガイド</h1>
+      <p class="article-header__subtitle">AIへの「正しい指示の出し方」は設計スキルである</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">12 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">プロンプト</span>
+        <span class="article-header__meta-item tag">実践</span>
+        <span class="article-header__meta-item tag">Chain-of-Thought</span>
+        <span class="article-header__meta-item tag">Few-shot</span>
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <article class="article-body">
+
+      <p>
+        「ChatGPTに聞いたけど使えない回答しか返ってこない」——この経験をしたことがある開発者は多いはずです。その原因の大半は、モデルの限界ではなくプロンプトの設計にあります。プロンプトエンジニアリングとは単なる「魔法の言葉を覚える」スキルではなく、<strong>モデルに与える入力仕様を設計する能力</strong>です。要件定義や API 設計と同じように、精度・再現性・保守性を意識した設計が求められます。
+      </p>
+
+      <!-- ============================================================
+           Section 1: プロンプトの構造分解
+           ============================================================ -->
+      <h2 id="section-1">1. プロンプトの構造分解</h2>
+
+      <p>
+        Chat Completions 形式の API では、1 回の呼び出しは複数のメッセージで構成されます。それぞれが異なる役割を担い、この構造を理解することがプロンプト設計の出発点です。
+      </p>
+
+      <!-- 3-layer stack SVG -->
+      <div class="diagram">
+        <svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="プロンプト構造：System / User / Assistant の3レイヤー">
+          <style>
+            .layer-box  { rx: 6; ry: 6; }
+            .layer-title { font-family: monospace; font-size: 13px; font-weight: bold; }
+            .layer-desc  { font-family: monospace; font-size: 10px; fill: #888884; }
+            .layer-badge { font-family: monospace; font-size: 10px; }
+          </style>
+
+          <rect width="560" height="220" fill="#0D0D0D"/>
+
+          <!-- System layer -->
+          <rect x="30" y="20" width="500" height="52" class="layer-box" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="50" y="43" class="layer-title" fill="#FF3D00">SYSTEM</text>
+          <text x="160" y="43" class="layer-badge" fill="#E8E8E2">role: "system"</text>
+          <text x="50" y="59" class="layer-desc">モデルの人格・制約・出力フォーマット・専門領域を定義。会話全体に永続的に作用する。</text>
+
+          <!-- Divider arrow -->
+          <line x1="280" y1="72" x2="280" y2="90" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <defs>
+            <marker id="arr2" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 7 3, 0 6" fill="#FF3D00"/>
+            </marker>
+          </defs>
+
+          <!-- User layer -->
+          <rect x="30" y="93" width="500" height="52" class="layer-box" fill="#1A1A1A" stroke="#E8E8E2" stroke-width="1"/>
+          <text x="50" y="116" class="layer-title" fill="#E8E8E2">USER</text>
+          <text x="130" y="116" class="layer-badge" fill="#888884">role: "user"</text>
+          <text x="50" y="132" class="layer-desc">エンドユーザーまたはアプリが送る実際の指示・質問。ターンごとに送られる。</text>
+
+          <!-- Divider arrow -->
+          <line x1="280" y1="145" x2="280" y2="163" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- Assistant layer -->
+          <rect x="30" y="166" width="500" height="38" class="layer-box" fill="#1A1A1A" stroke="#888884" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="50" y="186" class="layer-title" fill="#888884">ASSISTANT</text>
+          <text x="170" y="186" class="layer-badge" fill="#888884">role: "assistant"</text>
+          <text x="50" y="198" class="layer-desc">モデルの応答。Few-shot例や多ターン会話履歴として過去の応答を含めることができる。</text>
+        </svg>
+        <figcaption>図1: プロンプトの3レイヤー構造 — System・User・Assistantそれぞれの役割と作用範囲</figcaption>
+      </div>
+
+      <h3>各レイヤーの使い分け</h3>
+
+      <p>
+        <strong>System プロンプト</strong>はモデルの振る舞いを規定する「設定ファイル」です。ここに書くべき内容は以下の通りです：
+      </p>
+      <ul>
+        <li>ペルソナ定義（「あなたはXXの専門家です」）</li>
+        <li>出力フォーマット指定（「必ずJSON形式で返してください」）</li>
+        <li>制約条件（「コード以外の説明文は含めないでください」）</li>
+        <li>Few-shot 例のコンテキスト（後述）</li>
+      </ul>
+
+      <p>
+        <strong>User メッセージ</strong>には実際のタスクを記述します。長い仕様書やコードをここに貼り付けるのが一般的です。<strong>Assistant ターン</strong>は多ターン会話で過去の応答を履歴として渡すか、Few-shot の「良い応答例」をあらかじめ埋め込む目的で使います。
+      </p>
+
+      <!-- ============================================================
+           Section 2: 主要テクニック
+           ============================================================ -->
+      <h2 id="section-2">2. 主要テクニック</h2>
+
+      <h3>Zero-shot：例なし直接指示</h3>
+
+      <p>
+        最もシンプルな形式です。モデルに例を与えず、タスクを直接記述します。GPT-4 / Claude 3.7 のような高性能モデルは Zero-shot でも多くのタスクをこなせますが、<strong>出力フォーマットの指定が曖昧なままだと構造がブレます</strong>。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json</span>
+        </div>
+        <pre><code>// Zero-shot: フォーマットを明示して指示する
+{
+  "role": "user",
+  "content": "次の要件をUMLのユースケース図に変換してください。\nPlantUML形式で出力し、コードブロックのみを返してください。\n\n要件: ユーザーが商品を検索し、カートに追加し、購入できる"
+}</code></pre>
+      </div>
+
+      <h3>Few-shot：例を2〜5個与える</h3>
+
+      <p>
+        モデルに「正解のパターン」を見せることで、出力の一貫性と精度が大幅に向上します。特に<strong>独自の出力フォーマット・用語定義・業務固有の分類基準</strong>がある場合に有効です。例は多ければ良いわけではなく、2〜5件が実用上の最適解です（例が多すぎるとコンテキストを圧迫し、かえってモデルが混乱することがある）。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json</span>
+        </div>
+        <pre><code>// Few-shot: バグレポートをJSON構造化するエージェント
+{
+  "role": "system",
+  "content": "入力されたバグレポートを構造化JSONに変換してください。\n必ず以下のキーを含めてください: component, severity, steps\n\n例1:\n入力: ログイン画面でパスワードを入力すると500エラーが出る\n出力: {\"component\": \"認証\", \"severity\": \"Critical\", \"steps\": [\"ログイン画面を開く\", \"パスワードを入力する\", \"ログインボタンを押下する\"]}\n\n例2:\n入力: 検索結果が0件のとき画面が真っ白になる\n出力: {\"component\": \"検索\", \"severity\": \"Major\", \"steps\": [\"検索画面を開く\", \"ヒットしないキーワードを入力する\", \"検索ボタンを押下する\"]}"
+},
+{
+  "role": "user",
+  "content": "注文確認メールが届かないという問い合わせが複数件来ています"
+}</code></pre>
+      </div>
+
+      <h3>Chain-of-Thought（CoT）：推論ステップを明示させる</h3>
+
+      <p>
+        「ステップバイステップで考えてください」という一文を加えるだけで、複雑な推論タスクの精度が大幅に向上します。これは CoT（Chain-of-Thought）プロンプティングと呼ばれ、2022年のGoogle Brain の論文で実証された手法です。
+      </p>
+
+      <p>
+        なぜ効くのか：LLM はトークンを逐次生成するため、中間的な思考過程をテキストとして出力させることで、モデル自身が「考えながら答える」状態を作り出せます。特に計算・論理推論・複数条件の組み合わせが必要なタスクで威力を発揮します。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json</span>
+        </div>
+        <pre><code>// Chain-of-Thought: 設計判断の根拠を段階的に出力させる
+{
+  "role": "system",
+  "content": "あなたは経験豊富なソフトウェアアーキテクトです。\n設計判断を行う際は必ず以下の順序で考えてください:\n1. 要件の整理と制約条件の列挙\n2. 候補となるアーキテクチャパターンの列挙\n3. 各パターンのトレードオフ分析\n4. 推奨案とその理由"
+},
+{
+  "role": "user",
+  "content": "日次バッチ処理（件数: 約50万件/日）をリアルタイムAPI処理に移行する設計を検討してください。\n現行: PostgreSQL直接クエリのバッチ\n要件: レイテンシ < 200ms、可用性99.9%以上"
+}</code></pre>
+      </div>
+
+      <!-- ============================================================
+           Section 3: 業務別プロンプトパターン
+           ============================================================ -->
+      <h2 id="section-3">3. 業務別プロンプトパターン</h2>
+
+      <p>
+        開発プロセスの各フェーズにおいて、LLMが最も価値を発揮できるユースケースとプロンプトパターンは異なります。以下の表を参考に、フェーズごとに適切なアプローチを選択してください。
+      </p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>業務フェーズ</th>
+              <th>プロンプトパターン</th>
+              <th>効果・活用例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>要件定義</td>
+              <td>ユーザーストーリー抽出</td>
+              <td>ヒアリング議事録・RFP文書 → 構造化された要件一覧・受け入れ条件の生成</td>
+            </tr>
+            <tr>
+              <td>基本設計</td>
+              <td>ER図・シーケンス設計支援</td>
+              <td>要件テキスト → PlantUML/Mermaidのドラフト、設計書のレビュー指摘</td>
+            </tr>
+            <tr>
+              <td>実装</td>
+              <td>コード生成・補完</td>
+              <td>API仕様・型定義 → ボイラープレートコード、リファクタリング提案</td>
+            </tr>
+            <tr>
+              <td>テスト</td>
+              <td>テスト仕様・ケース生成</td>
+              <td>設計書・仕様書 → 境界値・異常系を含むテストケース一覧</td>
+            </tr>
+            <tr>
+              <td>障害対応</td>
+              <td>根本原因分析（RCA）</td>
+              <td>スタックトレース・ログ → 原因候補の列挙と調査手順の優先度付け</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>要件定義フェーズのプロンプトテンプレート</h3>
+
+      <p>
+        以下は要件定義フェーズで実際に使えるプロンプトテンプレートです。ヒアリング議事録や RFP テキストをそのまま貼り付けて活用できます。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json</span>
+        </div>
+        <pre><code>{
+  "role": "system",
+  "content": "あなたは要件定義の専門家です。以下の手順で入力テキストを処理してください。\n\n【処理手順】\n1. 利害関係者（ステークホルダー）を列挙する\n2. 各ステークホルダーの目的・ゴールを抽出する\n3. ユーザーストーリー形式（「〜として、〜したい。なぜなら〜だから」）で要件を記述する\n4. 各要件に優先度（Must/Should/Could/Won't）を付与する\n5. 曖昧・不明確な箇所を【確認事項】として列挙する\n\n【出力形式】\n- Markdown形式\n- ユーザーストーリーには連番IDを付与（US-001, US-002...）\n- 確認事項は番号付きリストで末尾に記載"
+},
+{
+  "role": "user",
+  "content": "以下のヒアリング議事録から要件を整理してください。\n\n---\n[議事録テキストをここに貼り付け]\n---"
+}</code></pre>
+      </div>
+
+      <h3>障害対応（RCA）プロンプトテンプレート</h3>
+
+      <p>
+        障害対応では時間的プレッシャーが高いため、構造化された分析を素早く出力させるプロンプトが有効です。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json</span>
+        </div>
+        <pre><code>{
+  "role": "system",
+  "content": "あなたはインシデント対応の専門家です。提供されたエラーログ・スタックトレースを分析し、以下のフォーマットで回答してください。\n\n## 原因候補（確率順）\n1. [最有力候補] 説明と根拠\n2. [次点] 説明と根拠\n\n## 即時調査手順\n- 確認すべきログ・メトリクス（具体的なコマンドを含む）\n\n## 暫定対処\n- サービス影響を最小化するための即時対応案\n\n## 恒久対処候補\n- 根本原因が特定された後の修正方針\n\n推測が含まれる場合は「（推測）」と明記してください。"
+},
+{
+  "role": "user",
+  "content": "以下のスタックトレースとアクセスログを分析してください。\n\n[ERROR] 2026-03-25 14:32:01 - java.lang.OutOfMemoryError: GC overhead limit exceeded\n  at java.util.Arrays.copyOf(Arrays.java:3210)\n  at com.example.service.ReportService.generateCSV(ReportService.java:234)\n  at com.example.controller.ReportController.export(ReportController.java:89)\n\nアクセスログ: 14:31に/api/report/exportへの同時リクエスト数が通常の8倍に急増"
+}</code></pre>
+      </div>
+
+      <!-- ============================================================
+           Section 4: 失敗パターンと修正
+           ============================================================ -->
+      <h2 id="section-4">4. 失敗パターンと修正</h2>
+
+      <div class="callout callout--warning">
+        <p class="callout__heading">現場でよく見る3大失敗パターン</p>
+        <ol>
+          <li><strong>曖昧な指示</strong>: 「いい感じに書いて」「わかりやすくして」など、評価基準が主観的。モデルは「いい感じ」の定義を推測するしかなく、期待と外れた出力になりやすい</li>
+          <li><strong>矛盾する制約</strong>: 「短く簡潔に、かつ詳細に」「初心者向けに、ただし専門用語も使って」などのトレードオフを解決せずに両方を要求する</li>
+          <li><strong>コンテキスト不足</strong>: 「このコードを修正して」と言うだけで、言語・フレームワーク・修正の目的・制約条件を伝えない</li>
+        </ol>
+      </div>
+
+      <h3>失敗例 vs 改善例：コード生成</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json — BAD: 曖昧・コンテキスト不足</span>
+        </div>
+        <pre><code>// NG: 何を直せばいいかモデルが推測できない
+{
+  "role": "user",
+  "content": "このコードを直してください。\n\nfunction calc(a, b) {\n  return a / b;\n}"
+}</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json — GOOD: 目的・制約・フォーマットを明示</span>
+        </div>
+        <pre><code>// OK: 問題の具体的内容・言語バージョン・期待する変更内容を全て含む
+{
+  "role": "system",
+  "content": "TypeScript（strict mode）のコードレビュアーです。修正後のコードのみを返し、変更箇所にはインラインコメントで理由を記載してください。"
+},
+{
+  "role": "user",
+  "content": "以下のTypeScript関数にはゼロ除算と型安全性の問題があります。\n修正してください。\n\n【問題点】\n- bが0のとき Infinity が返る（呼び出し元がエラーハンドリングを期待している）\n- 戻り値の型が number だが、エラーケースで例外をスローするか Result 型を返すべき\n\n【制約】\n- throw は使わず Result<number, string> 型で返してください\n- 既存の関数シグネチャは変更しないでください\n\n```typescript\nfunction calc(a: number, b: number): number {\n  return a / b;\n}\n```"
+}</code></pre>
+      </div>
+
+      <h3>失敗例 vs 改善例：矛盾する制約</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json — BAD: 矛盾する指示</span>
+        </div>
+        <pre><code>// NG: 「短く」と「全部入れて」は両立しない
+{
+  "role": "user",
+  "content": "マイクロサービスアーキテクチャの説明を短く、でも全ての概念を網羅して、わかりやすく書いてください"
+}</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">json — GOOD: 優先順位を明示してトレードオフを解消</span>
+        </div>
+        <pre><code>// OK: 対象読者・文字数・カバーする範囲を優先順位付きで指定する
+{
+  "role": "system",
+  "content": "技術ドキュメントライターです。指定された形式で正確に記述してください。"
+},
+{
+  "role": "user",
+  "content": "対象読者: モノリシックアーキテクチャの経験はあるが、マイクロサービスは未経験の開発者\n文字数: 400字以内（優先）\nカバーする概念: 定義・モノリスとの最大の違い・採用時の主なトレードオフの3点のみ\n\n上記の条件でマイクロサービスアーキテクチャの説明を書いてください。"
+}</code></pre>
+      </div>
+
+      <!-- ============================================================
+           Section 5: パラメータ制御とバージョン管理
+           ============================================================ -->
+      <h2 id="section-5">5. パラメータ制御とバージョン管理</h2>
+
+      <h3>Temperature：出力の「ランダム性」を制御する</h3>
+
+      <p>
+        Temperature は LLM が次のトークンを選ぶ際の確率分布の「広がり」を制御するパラメータです。0 に近づくほど最確率のトークンが選ばれやすくなり（決定論的）、高い値ほど低確率のトークンも選ばれやすくなります（多様・創造的）。
+      </p>
+
+      <ul>
+        <li><strong>0〜0.2</strong>: ほぼ決定論的。同じ入力に対して毎回ほぼ同じ出力。コード生成・SQL・フォーマット変換に適する</li>
+        <li><strong>0.3〜0.7</strong>: バランス型。多少のバリエーションがありつつ品質が安定。要件整理・文書要約・分析に適する</li>
+        <li><strong>0.7〜1.5</strong>: 創造的。多様なアイデアを生成。ブレインストーミング・命名案生成・マーケティングコピーに適する</li>
+        <li><strong>1.5〜2.0</strong>: 極めてランダム。実用的なシナリオでの使用は限定的。実験・創作領域（※ Anthropic Claude APIの有効範囲は0〜1.0）</li>
+      </ul>
+
+      <h3>Max Tokens と Stop Sequences</h3>
+
+      <p>
+        <code>max_tokens</code> は出力の上限トークン数を制限します。出力が途中で切れてもコストが発生するため、期待する出力長の1.3〜1.5倍程度に設定するのが経験則です。
+      </p>
+
+      <p>
+        <code>stop</code>（Stop Sequences）は指定した文字列が出力に現れた時点で生成を停止させます。Few-shot の各例の区切り文字として使うことで、余分な生成を防げます。
+      </p>
+
+      <h3>業務用途別 推奨パラメータ設定</h3>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>業務用途</th>
+              <th>Temperature</th>
+              <th>理由</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>コード生成・SQL・フォーマット変換</td>
+              <td>0.1 〜 0.3</td>
+              <td>再現性・一貫性を最優先。同じ仕様から毎回同じコードが生成されることが望ましい</td>
+            </tr>
+            <tr>
+              <td>要件整理・議事録要約・ドキュメント生成</td>
+              <td>0.3 〜 0.5</td>
+              <td>内容の正確性を保ちつつ、表現に若干の柔軟性を持たせる</td>
+            </tr>
+            <tr>
+              <td>設計レビュー・リスク分析・意見出し</td>
+              <td>0.5 〜 0.7</td>
+              <td>同一観点の繰り返しを避け、複数の視点を引き出す</td>
+            </tr>
+            <tr>
+              <td>ブレインストーミング・命名案・アイデア出し</td>
+              <td>0.7 〜 1.0</td>
+              <td>多様性を最大化。候補を多数生成して人間が選別する前提</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>プロンプトを Git で管理する</h3>
+
+      <p>
+        本番運用では、プロンプトはコードと同等の成果物として管理すべきです。以下のベストプラクティスを推奨します。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">text — 推奨ディレクトリ構造</span>
+        </div>
+        <pre><code>prompts/
+├── requirements/
+│   ├── user-story-extraction.v1.json    # 安定版
+│   ├── user-story-extraction.v2.json    # 改善テスト中
+│   └── CHANGELOG.md                     # 変更履歴
+├── code-review/
+│   ├── typescript-review.v1.json
+│   └── typescript-review.v1.test.jsonl  # テストケース
+└── incident/
+    └── rca-analysis.v1.json</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — プロンプトのA/Bテスト実装例</span>
+        </div>
+        <pre><code>import json
+import hashlib
+from pathlib import Path
+
+def load_prompt(name: str, version: str = "v1") -> dict:
+    """バージョン指定でプロンプトを読み込む"""
+    path = Path(f"prompts/{name}.{version}.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+def ab_test_prompt(request_id: str, name: str) -> dict:
+    """
+    request_id のハッシュ値でA/Bを振り分ける。
+    同一ユーザーには常に同じバージョンが当たるため体験が一貫する。
+    """
+    bucket = int(hashlib.md5(request_id.encode()).hexdigest(), 16) % 100
+    version = "v2" if bucket < 20 else "v1"  # 20%をv2に流す
+    return load_prompt(name, version)
+
+# 使用例
+prompt = ab_test_prompt(
+    request_id="user-session-abc123",
+    name="requirements/user-story-extraction"
+)
+# → 20%の確率でv2、80%でv1が返る</code></pre>
+      </div>
+
+      <p>
+        プロンプトの変更を CI/CD パイプラインに組み込み、定義したテストケース（入力・期待出力のペア）でリグレッションテストを自動実行することで、プロンプト改善が既存の動作を壊していないかを継続的に確認できます。
+      </p>
+
+      <!-- Summary Box -->
+      <div class="article-summary">
+        <p class="article-summary__heading">この記事のまとめ</p>
+        <ol class="article-summary__list">
+          <li>プロンプトはSystem / User / Assistantの<strong>3レイヤー構造</strong>を理解し、各レイヤーの役割に合った内容を配置することが基本です</li>
+          <li>Zero-shot・Few-shot・CoTの3テクニックは用途で使い分ける。出力フォーマットが重要な場合はFew-shot、推論が必要な場合はCoTが効果的です</li>
+          <li>失敗の大半は<strong>曖昧な指示・矛盾する制約・コンテキスト不足</strong>の3パターン。対象読者・文字数・優先順位・制約を明示することで解消できます</li>
+          <li>Temperatureはタスクの性質に合わせて設定する。コード生成は0.1〜0.3、ブレストは0.7〜1.0が目安です</li>
+          <li>プロンプトはコードと同等の資産として<strong>バージョン管理・テスト・A/Bテスト</strong>を行い、継続的に改善する体制を整えましょう</li>
+        </ol>
+      </div>
+
+    </article>
+
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="01-llm-transformer-basics.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">LLM・トランスフォーマーの基礎理論</span>
+      </a>
+      <a href="03-rag.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">RAG（検索拡張生成）設計・実装ガイド</span>
+      </a>
+    </nav>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

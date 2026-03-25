@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM・トランスフォーマーの基礎理論 — GenAI Engineering</title>
+  <meta name="description" content="生成AIはなぜ「賢く」見えるのか — 仕組みから理解するLLM">
+  <meta property="og:title" content="LLM・トランスフォーマーの基礎理論 — GenAI Engineering">
+  <meta property="og:description" content="生成AIはなぜ「賢く」見えるのか — 仕組みから理解するLLM">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/01-llm-transformer-basics.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/01-llm-transformer-basics.html">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
+
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
+    </div>
+  </div>
+</header>
+
+<!-- Article Layout -->
+<div class="layout-article">
+
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">言語モデルとは何か</a></li>
+      <li><a href="#section-2">トランスフォーマーアーキテクチャ</a></li>
+      <li><a href="#section-3">学習の3ステップ</a></li>
+      <li><a href="#section-4">スケーリング則とモデル比較</a></li>
+      <li><a href="#section-5">実務への接続：APIとコスト</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>LLM・トランスフォーマーの基礎理論</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">01</p>
+      <h1 class="article-header__title">LLM・トランスフォーマーの基礎理論</h1>
+      <p class="article-header__subtitle">生成AIはなぜ「賢く」見えるのか — 仕組みから理解するLLM</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">14 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">LLM</span>
+        <span class="article-header__meta-item tag">Transformer</span>
+        <span class="article-header__meta-item tag">基礎理論</span>
+        <span class="article-header__meta-item tag">アーキテクチャ</span>
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <article class="article-body">
+
+      <!-- ============================================================
+           Section 1: 言語モデルとは何か
+           ============================================================ -->
+      <h2 id="section-1">1. 言語モデルとは何か</h2>
+
+      <p>
+        「ChatGPTは本当に文章を理解しているのか？」——この問いに対する正直な答えは「理解という概念次第」です。LLM（大規模言語モデル）の本質を一言で表すなら、<strong>確率的な次トークン予測マシン</strong>です。過去のトークン列を入力として受け取り、次に来る可能性が最も高いトークンを出力する。その繰り返しによって文章が生成されます。
+      </p>
+
+      <p>
+        この単純に聞こえる仕組みが、なぜ高品質なコード生成や複雑な推論を実現できるのか——それを理解するには、まずトークンとモデルの構造を把握する必要があります。
+      </p>
+
+      <h3>トークンとは何か</h3>
+
+      <p>
+        LLMはテキストを文字や単語の単位ではなく、<strong>トークン</strong>という独自の断片として処理します。トークナイザーの実装によって異なりますが、GPT-4のBPE（Byte Pair Encoding）では英語の場合おおよそ1単語≈0.75トークン、日本語では漢字1文字が1〜2トークンになることが多いです。
+      </p>
+
+      <ul>
+        <li><strong>単語ベース</strong>: "hello" → <code>hello</code>（1トークン）</li>
+        <li><strong>サブワードベース（BPE）</strong>: "tokenization" → <code>token</code> + <code>ization</code>（2トークン）</li>
+        <li><strong>文字ベース</strong>: "AI" → <code>A</code> + <code>I</code>（2トークン）</li>
+      </ul>
+
+      <p>
+        なぜトークン単位にするかというと、語彙サイズ（ボキャブラリー）と表現力のトレードオフを最適化するためです。文字単位では語彙が小さくなりモデルが軽くなる一方、同じ意味を表すのに多くのステップが必要になります。単語単位では未知語（out-of-vocabulary）問題が深刻化します。サブワード方式はその中間点として実用上最も広く採用されています。
+      </p>
+
+      <h3>数式的な直感：条件付き確率の連鎖</h3>
+
+      <p>
+        LLMがやっていることを数式で表すと以下のようになります。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">math</span>
+        </div>
+        <pre><code>P(t₁, t₂, ..., tₙ) = P(t₁) × P(t₂|t₁) × P(t₃|t₁,t₂) × ... × P(tₙ|t₁,...,tₙ₋₁)
+
+// 推論時：最も確率の高い次のトークンを選ぶ（greedy decoding）
+t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
+      </div>
+
+      <p>
+        あるトークン列が与えられたとき、次のトークンの確率分布を出力する——これが全てです。「なぜGPTが賢く見えるか」は、巨大なデータと計算資源で訓練されたこの確率分布の精度が、人間の書いた文章と非常に近くなっているからです。
+      </p>
+
+      <p>
+        たとえば「東京の天気は」というトークン列が入力された場合、モデルは次のトークンとして「晴れ」「雨」「曇り」「今日」などに高い確率を割り当て、「バナナ」や「量子」には低い確率を割り当てます。これは単純なパターンマッチングではなく、文脈全体を考慮した確率推定です。
+      </p>
+
+      <!-- Image Placeholder -->
+      <figure>
+        <div class="img-placeholder">
+          <!-- IMAGE GENERATION PROMPT (Midjourney / DALL-E):
+               A minimalist technical diagram on a pure dark (#0D0D0D) background showing
+               text tokenization flow. Input: raw Japanese text string. Arrow in bright orange
+               (#FF3D00) pointing right. Tokenizer box with monospace label. Output: array of
+               numbered token boxes. Second orange arrow pointing to a neural network block
+               (abstract layered rectangles). Final output: probability distribution bar chart
+               with orange highlight on top token. Terminal brutalist aesthetic, crisp grid lines
+               in muted gray, no gradients, high contrast. Aspect ratio 16:9.
+          -->
+        </div>
+        <figcaption>図1: LLMへの入力と出力の概念図 — テキストがトークン列に変換され、次トークンの確率分布として出力される</figcaption>
+      </figure>
+
+      <!-- ============================================================
+           Section 2: トランスフォーマーアーキテクチャ
+           ============================================================ -->
+      <h2 id="section-2">2. トランスフォーマーアーキテクチャ</h2>
+
+      <p>
+        2017年のGoogle論文「Attention Is All You Need」で提案されたトランスフォーマーは、それ以前のRNN（再帰型ニューラルネットワーク）が抱えていた長距離依存関係の学習困難という問題を根本的に解決しました。現代のLLMは事実上すべてこのアーキテクチャをベースにしています。
+      </p>
+
+      <h3>Attention機構の直感的理解</h3>
+
+      <p>
+        「猫が魚を食べた」という文を処理するとき、「食べた」という動詞は「猫」（主語）と「魚」（目的語）の両方と強く関連しています。Attention（注意）機構は、<strong>各トークンが他のどのトークンに「注目」すべきかを重み付けで学習する仕組み</strong>です。
+      </p>
+
+      <p>
+        この重みはQuery（クエリ）・Key（キー）・Value（バリュー）という3つのベクトルを使って計算されます。QueryとKeyの内積から注意スコアを算出し、Softmaxで正規化したものをValueに掛け合わせることで、文脈を考慮した表現が得られます。
+      </p>
+
+      <!-- Attention SVG Diagram -->
+      <div class="diagram">
+        <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="アテンション可視化：猫が魚を食べた">
+          <style>
+            .attn-token { font-family: 'JetBrains Mono', monospace; font-size: 14px; fill: #E8E8E2; }
+            .attn-box { rx: 4; ry: 4; }
+            .attn-line-high { stroke: #FF3D00; stroke-width: 2.5; opacity: 0.9; }
+            .attn-line-mid  { stroke: #FF3D00; stroke-width: 1.2; opacity: 0.45; }
+            .attn-line-low  { stroke: #888884; stroke-width: 0.8; opacity: 0.3; }
+            .attn-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #888884; }
+          </style>
+
+          <!-- Background -->
+          <rect width="600" height="200" fill="#0D0D0D"/>
+
+          <!-- Token boxes (y=130) -->
+          <!-- 猫 -->
+          <rect x="40" y="110" width="60" height="32" class="attn-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="70" y="131" class="attn-token" text-anchor="middle">猫が</text>
+
+          <!-- 魚 -->
+          <rect x="175" y="110" width="60" height="32" class="attn-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="205" y="131" class="attn-token" text-anchor="middle">魚を</text>
+
+          <!-- 食べた -->
+          <rect x="310" y="110" width="80" height="32" class="attn-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="350" y="131" class="attn-token" text-anchor="middle">食べた</text>
+
+          <!-- [EOS] -->
+          <rect x="460" y="110" width="80" height="32" class="attn-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="500" y="131" class="attn-label" text-anchor="middle">[EOS]</text>
+
+          <!-- Attention arcs (curves above tokens) representing "食べた" attending to others -->
+          <!-- 食べた → 猫が (high) -->
+          <path d="M 350,110 Q 210,40 70,110" fill="none" class="attn-line-high"/>
+          <!-- 食べた → 魚を (high) -->
+          <path d="M 350,110 Q 280,60 205,110" fill="none" class="attn-line-high"/>
+          <!-- 猫が → 魚を (mid) -->
+          <path d="M 70,110 Q 138,70 205,110" fill="none" class="attn-line-mid"/>
+          <!-- 魚を → EOS (low) -->
+          <path d="M 205,110 Q 352,80 500,110" fill="none" class="attn-line-low"/>
+
+          <!-- Arrowheads on high-attention lines at 猫が end -->
+          <polygon points="70,110 63,100 78,100" fill="#FF3D00" opacity="0.9"/>
+          <!-- at 魚を end (from 食べた) -->
+          <polygon points="205,110 198,100 213,100" fill="#FF3D00" opacity="0.9"/>
+
+          <!-- Legend -->
+          <line x1="40" y1="175" x2="70" y2="175" class="attn-line-high"/>
+          <text x="76" y="179" class="attn-label">高い注意重み</text>
+          <line x1="180" y1="175" x2="210" y2="175" class="attn-line-low"/>
+          <text x="216" y="179" class="attn-label">低い注意重み</text>
+
+          <!-- Diagram title -->
+          <text x="300" y="20" class="attn-label" text-anchor="middle" fill="#E8E8E2" font-size="12">Attention可視化：「食べた」が参照するトークン</text>
+        </svg>
+        <figcaption>図2: Attentionの概念図 — 「食べた」は「猫が」と「魚を」に強く注目する。オレンジの線が高注意重みを示す</figcaption>
+      </div>
+
+      <h3>3種類のアーキテクチャ</h3>
+
+      <p>
+        トランスフォーマーは用途に応じて3つの構成に分類されます。
+      </p>
+
+      <ul>
+        <li>
+          <strong>Encoder-only</strong>（例: BERT, RoBERTa）<br>
+          入力テキスト全体を双方向に処理し、各トークンの文脈表現を得ます。テキスト分類・固有表現認識・文書検索（埋め込み生成）に優れますが、テキスト生成には向きません。
+        </li>
+        <li>
+          <strong>Decoder-only</strong>（例: GPT-4, Claude, Llama）<br>
+          過去のトークンのみを参照する自己回帰的な生成を行います。現在の主流です。プロンプトに対して逐次的にトークンを生成します。
+        </li>
+        <li>
+          <strong>Encoder-Decoder</strong>（例: T5, BART）<br>
+          Encoderが入力を圧縮表現に変換し、DecoderがCross-Attentionを使ってその表現から出力を生成します。機械翻訳・要約など入出力の長さが異なるタスクに適します。
+        </li>
+      </ul>
+
+      <h3>なぜDecoder-onlyが主流になったか</h3>
+
+      <p>
+        Decoder-onlyモデルが席巻した最大の理由は<strong>スケーラビリティ</strong>です。事前学習タスク（次トークン予測）とファインチューニングのタスク（指示への応答）が同一のフォーマット上で動作するため、同じアーキテクチャのまま規模を拡大するだけで多様な能力が emergent（創発）します。Encoder-Decoderは2つのコンポーネントを別々に管理する必要があり、スケールアップが複雑になります。
+      </p>
+
+      <div class="callout callout--info">
+        <p class="callout__heading">マルチヘッドアテンション（Multi-Head Attention）</p>
+        <p>
+          実際のトランスフォーマーでは、Attentionを1つではなく複数の「ヘッド」で並列実行します。各ヘッドは異なる「注目パターン」を学習できます——あるヘッドは構文的関係（主語と動詞）に注目し、別のヘッドは意味的関係（代名詞と先行詞）に注目するといった具合です。ヘッド数はモデルによって異なり（GPT-3では96層・96ヘッド）、これらの多様な視点が組み合わさることで豊かな言語理解が実現します。なお、GPT-4の詳細なアーキテクチャはOpenAIにより非公開とされています。
+        </p>
+      </div>
+
+      <!-- ============================================================
+           Section 3: 学習の3ステップ
+           ============================================================ -->
+      <h2 id="section-3">3. 学習の3ステップ</h2>
+
+      <p>
+        ChatGPTやClaudeのようなモデルが「指示に従い、安全で有用な回答を返す」ようになるまでには、大きく3つの学習フェーズがあります。それぞれのフェーズがモデルの性質を根本的に変えていきます。
+      </p>
+
+      <!-- Pipeline SVG -->
+      <div class="diagram">
+        <svg viewBox="0 0 700 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLM学習パイプライン：事前学習→SFT→RLHF">
+          <style>
+            .pipe-box  { rx: 6; ry: 6; }
+            .pipe-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #E8E8E2; text-anchor: middle; }
+            .pipe-sub  { font-family: 'JetBrains Mono', monospace; font-size: 9px; fill: #888884; text-anchor: middle; }
+            .pipe-arrow { stroke: #FF3D00; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+          </style>
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+          </defs>
+
+          <rect width="700" height="120" fill="#0D0D0D"/>
+
+          <!-- Stage 1: Pre-training data -->
+          <rect x="10" y="30" width="90" height="50" class="pipe-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="55" y="52" class="pipe-text">大規模</text>
+          <text x="55" y="66" class="pipe-text">テキスト</text>
+          <text x="55" y="78" class="pipe-sub">数兆トークン</text>
+
+          <!-- Arrow 1 -->
+          <line x1="100" y1="55" x2="130" y2="55" class="pipe-arrow"/>
+
+          <!-- Stage 2: Pretrained model -->
+          <rect x="130" y="20" width="110" height="70" class="pipe-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="185" y="48" class="pipe-text">事前学習</text>
+          <text x="185" y="62" class="pipe-text">モデル</text>
+          <text x="185" y="76" class="pipe-sub">Base Model</text>
+          <text x="185" y="88" class="pipe-sub">次トークン予測</text>
+
+          <!-- Arrow 2 -->
+          <line x1="240" y1="55" x2="270" y2="55" class="pipe-arrow"/>
+
+          <!-- SFT data -->
+          <rect x="255" y="30" width="80" height="50" class="pipe-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="295" y="52" class="pipe-text">SFT</text>
+          <text x="295" y="66" class="pipe-text">データ</text>
+          <text x="295" y="78" class="pipe-sub">指示応答ペア</text>
+
+          <!-- Arrow 3 -->
+          <line x1="335" y1="55" x2="365" y2="55" class="pipe-arrow"/>
+
+          <!-- Stage 3: Instruction model -->
+          <rect x="365" y="20" width="110" height="70" class="pipe-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="420" y="48" class="pipe-text">指示モデル</text>
+          <text x="420" y="62" class="pipe-text">（SFT済）</text>
+          <text x="420" y="76" class="pipe-sub">Instruct Model</text>
+          <text x="420" y="88" class="pipe-sub">指示に従う</text>
+
+          <!-- Arrow 4 -->
+          <line x1="475" y1="55" x2="505" y2="55" class="pipe-arrow"/>
+
+          <!-- Human feedback -->
+          <rect x="490" y="30" width="80" height="50" class="pipe-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="530" y="52" class="pipe-text">人間の</text>
+          <text x="530" y="66" class="pipe-text">評価</text>
+          <text x="530" y="78" class="pipe-sub">Good/Bad</text>
+
+          <!-- Arrow 5 -->
+          <line x1="570" y1="55" x2="600" y2="55" class="pipe-arrow"/>
+
+          <!-- RLHF model -->
+          <rect x="600" y="20" width="90" height="70" class="pipe-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="2"/>
+          <text x="645" y="48" class="pipe-text">RLHF</text>
+          <text x="645" y="62" class="pipe-text">モデル</text>
+          <text x="645" y="76" class="pipe-sub">安全・有用</text>
+          <text x="645" y="88" class="pipe-sub">最終製品</text>
+        </svg>
+        <figcaption>図3: LLMの学習パイプライン — 事前学習・SFT・RLHFの3段階を経て製品モデルが完成する</figcaption>
+      </div>
+
+      <h3>Step 1: 事前学習（Pre-training）</h3>
+
+      <p>
+        インターネット上のWebページ、書籍、コード、論文など、人類が生成した膨大なテキストデータを使い、<strong>自己教師あり学習</strong>でモデルを訓練します。「正解ラベル」は不要で、入力テキストの次のトークンがそのまま正解になります。GPT-4の事前学習には数兆トークン・数千億円規模の計算コストがかかったとされます。
+      </p>
+
+      <p>
+        この段階のモデルは「テキスト補完機」です。「東京は」と入力すれば「日本の首都で」と続けますが、「要約してください」という指示には適切に応答できません。
+      </p>
+
+      <h3>Step 2: 教師ありファインチューニング（Supervised Fine-tuning / SFT）</h3>
+
+      <p>
+        人間が作成した（指示, 理想的な応答）のペアを使い、モデルを<strong>指示に従えるよう</strong>チューニングします。「〜してください」という指示に対して「はい、〜します」と応答する振る舞いを学ばせます。データ量は事前学習に比べて桁違いに少なく（数万〜数十万件程度）、コストも低い一方で効果は劇的です。
+      </p>
+
+      <h3>Step 3: RLHF（人間のフィードバックによる強化学習）</h3>
+
+      <p>
+        SFTまでのモデルでも指示には従えますが、<strong>有害な内容を生成しない・ユーザーに本当に有用な回答を返す</strong>という点は不完全です。RLHFでは以下の2フェーズを踏みます：
+      </p>
+
+      <ol>
+        <li><strong>報酬モデルの学習</strong>: 同じ質問に対する複数の回答を人間がランク付けし、その好みを学習した「報酬モデル（Reward Model）」を構築する</li>
+        <li><strong>PPOによる強化学習</strong>: 報酬モデルのスコアを最大化するようにLLMをさらに更新する。ただしオリジナルモデルから大きく逸脱しないようKLダイバージェンスで制約をかける</li>
+      </ol>
+
+      <p>
+        最近ではRLHFの代替として<strong>DPO（Direct Preference Optimization）</strong>が注目されており、報酬モデルを別途構築せず直接選好データからファインチューニングできるため、実装がシンプルになります。
+      </p>
+
+      <!-- ============================================================
+           Section 4: スケーリング則とモデル比較
+           ============================================================ -->
+      <h2 id="section-4">4. スケーリング則とモデル比較</h2>
+
+      <h3>スケーリング則（Scaling Laws）</h3>
+
+      <p>
+        2020年にOpenAIが発表した研究により、LLMの性能（損失）はモデルのパラメータ数・学習データ量・計算量（FLOPs）の<strong>べき乗則</strong>に従って改善することが示されました。これをスケーリング則（Scaling Laws）と呼びます。
+      </p>
+
+      <p>
+        重要な含意は、「より大きいモデル・より多いデータ・より多い計算」が予測可能な形で性能を向上させるという点です。ただし2022年のChinchillaの研究では、同じ計算予算ならモデルサイズと学習データ量を<em>均衡</em>させるべきことが示され、GPT-3系は相対的にデータ量が少なすぎた可能性が指摘されました。
+      </p>
+
+      <h3>コンテキストウィンドウ</h3>
+
+      <p>
+        モデルが一度に「見られる」トークン数をコンテキストウィンドウ（Context Window）と呼びます。この上限を超えた過去のトークンはモデルから見えなくなります。2023年以前は8K〜32K tokens程度が上限でしたが、2026年現在では100K〜1M tokensが一般的になりつつあります。
+      </p>
+
+      <p>
+        コンテキストが長いと、長大な仕様書をまるごと与えてのコード生成や、会話履歴全体を保持したままの対話が可能になります。一方でコンテキスト長が増えるほど推論コスト（計算量・料金）も増加することに注意が必要です。
+      </p>
+
+      <h3>主要モデル比較（2025年末時点）</h3>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>モデル</th>
+              <th>提供元</th>
+              <th>コンテキスト</th>
+              <th>特徴</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>gpt-4o</code></td>
+              <td>OpenAI</td>
+              <td>128K tokens</td>
+              <td>高精度、マルチモーダル（画像・音声対応）、広いエコシステム</td>
+            </tr>
+            <tr>
+              <td><code>claude-3-7-sonnet</code></td>
+              <td>Anthropic</td>
+              <td>200K tokens</td>
+              <td>長文理解・コーディング特化、思考モード（拡張推論）対応</td>
+            </tr>
+            <tr>
+              <td><code>gemini-2.0-flash</code></td>
+              <td>Google</td>
+              <td>1M tokens</td>
+              <td>超高速・低コスト、Google Workspaceとの連携、長文処理に強み</td>
+            </tr>
+            <tr>
+              <td><code>llama-3.3-70b</code></td>
+              <td>Meta</td>
+              <td>128K tokens</td>
+              <td>オープンソース、オンプレミス・プライベートクラウド運用可、商用利用可</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        どのモデルを選ぶかは「精度・速度・コスト・データ管理ポリシー」の4要素のバランスで決まります。特に機密性の高い業務では、データが外部サーバーに送信されないオンプレミス運用（Llama等のオープンウェイトモデル）が選ばれるケースが増えています。
+      </p>
+
+      <!-- ============================================================
+           Section 5: 実務への接続
+           ============================================================ -->
+      <h2 id="section-5">5. 実務への接続：APIとコスト</h2>
+
+      <p>
+        LLMの理論を把握したら、次は実際にAPIとして組み込む際の基礎を押さえましょう。ほとんどのLLMプロバイダーはRESTful APIを提供しており、HTTPリクエストでモデルを呼び出せます。
+      </p>
+
+      <h3>基本的なAPI呼び出し構造</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">bash</span>
+        </div>
+        <pre><code># 汎用的なLLM API呼び出しの例（Chat Completions形式）
+curl https://api.example-llm.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{
+    "model": "your-model-name",
+    "messages": [
+      {
+        "role": "system",
+        "content": "あなたは経験豊富なソフトウェアアーキテクトです。"
+      },
+      {
+        "role": "user",
+        "content": "マイクロサービスとモノリスの選択基準を教えてください。"
+      }
+    ],
+    "temperature": 0.3,
+    "max_tokens": 1024
+  }'</code></pre>
+      </div>
+
+      <p>
+        レスポンスは <code>choices[0].message.content</code> にテキストが入り、<code>usage</code> フィールドに消費トークン数が記録されます。このトークン数が課金の基準になります。
+      </p>
+
+      <h3>コスト計算の基礎</h3>
+
+      <p>
+        API利用料は <strong>入力トークン数 × 入力単価 + 出力トークン数 × 出力単価</strong> で決まります。一般的に出力トークンの単価は入力の2〜4倍に設定されています（生成処理は推論負荷が高いため）。
+      </p>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python</span>
+        </div>
+        <pre><code># コスト試算の例（料金は変動するため必ずプロバイダーの最新情報を確認）
+def estimate_cost(
+    input_tokens: int,
+    output_tokens: int,
+    input_price_per_1m: float,   # 例: 3.0 USD/1M tokens
+    output_price_per_1m: float,  # 例: 15.0 USD/1M tokens
+) -> float:
+    input_cost  = (input_tokens  / 1_000_000) * input_price_per_1m
+    output_cost = (output_tokens / 1_000_000) * output_price_per_1m
+    return input_cost + output_cost
+
+# 例: 1000トークン入力・500トークン出力を1万回/日実行した場合
+daily_cost = estimate_cost(
+    input_tokens=1_000 * 10_000,
+    output_tokens=500 * 10_000,
+    input_price_per_1m=3.0,
+    output_price_per_1m=15.0,
+)
+print(f"日次コスト: ${daily_cost:.2f}")  # → 約$105/日</code></pre>
+      </div>
+
+      <h3>レートリミットとレイテンシの考慮事項</h3>
+
+      <p>
+        本番環境でAPIを組み込む際に見落としがちな非機能要件があります。
+      </p>
+
+      <ul>
+        <li><strong>RPM / TPM（Requests/Tokens per Minute）</strong>: プランによって上限が決まっており、バースト的なトラフィックでは429エラーが返る。Exponential backoffによるリトライ実装は必須です。</li>
+        <li><strong>TTFT（Time to First Token）</strong>: 最初のトークンが返るまでの時間。ユーザー向けUIではストリーミング出力（Server-Sent Events）を使い、体感レイテンシを下げる設計が重要です。</li>
+        <li><strong>TPS（Tokens per Second）</strong>: 生成速度。長い応答を生成する場合の全体レスポンスタイムを試算しておきましょう。</li>
+      </ul>
+
+      <div class="callout callout--warning">
+        <p class="callout__heading">本番利用前に確認すべき3つのこと</p>
+        <ol>
+          <li><strong>データ保存・学習利用ポリシー</strong>: 送信したプロンプトがモデルの再学習に使われるか。API利用規約のデータ利用条項を確認し、必要に応じてオプトアウトまたはプライベートデプロイを選択する</li>
+          <li><strong>レートリミット上限とスケールアップ申請</strong>: デフォルト上限はスタータープランで低く設定されていることが多い。本番負荷試験前にプロバイダーへの上限引き上げ申請が必要な場合がある</li>
+          <li><strong>SLA（可用性保証）</strong>: 多くのAPIは99.9%のSLAを提供するが、メンテナンスウィンドウや障害時のフォールバック戦略を設計しておく。特に複数モデルへのフォールバックは障害耐性向上に効果的</li>
+        </ol>
+      </div>
+
+      <!-- Summary Box -->
+      <div class="article-summary">
+        <p class="article-summary__heading">この記事のまとめ</p>
+        <ol class="article-summary__list">
+          <li>LLMは<strong>確率的な次トークン予測モデル</strong>であり、巨大なデータで訓練された条件付き確率分布が「賢さ」の正体です</li>
+          <li>トランスフォーマーのAttention機構は、各トークンが文脈中の他のトークンへの「注目度」を学習することで長距離依存関係を捉えます</li>
+          <li>現在主流のDecoder-onlyアーキテクチャは、事前学習→SFT→RLHFの3段階を経て「指示に従い安全に応答する」モデルになります</li>
+          <li>スケーリング則により性能はパラメータ数・データ量・計算量のべき乗で改善しますが、Chinchillaの知見からデータとモデルサイズのバランスが重要です</li>
+          <li>API組み込み時はトークン単位のコスト計算・レートリミット対策・データ保存ポリシーの確認を本番前に必ず行いましょう</li>
+        </ol>
+      </div>
+
+    </article>
+
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="../index.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">記事一覧へ戻る</span>
+      </a>
+      <a href="02-prompt-engineering.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">プロンプトエンジニアリング実践ガイド</span>
+      </a>
+    </nav>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

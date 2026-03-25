@@ -1,0 +1,82 @@
+[
+  {
+    "id": "01",
+    "slug": "llm-transformer-basics",
+    "title": "LLM・トランスフォーマーの基礎理論",
+    "subtitle": "生成AIはなぜ「賢く」見えるのか — 仕組みから理解するLLM",
+    "tags": ["LLM", "Transformer", "基礎理論", "アーキテクチャ"],
+    "readingTime": 14,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/01-llm-transformer-basics.html"
+  },
+  {
+    "id": "02",
+    "slug": "prompt-engineering",
+    "title": "プロンプトエンジニアリング実践ガイド",
+    "subtitle": "AIへの「正しい指示の出し方」は設計スキルである",
+    "tags": ["プロンプト", "実践", "Chain-of-Thought", "Few-shot"],
+    "readingTime": 12,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/02-prompt-engineering.html"
+  },
+  {
+    "id": "03",
+    "slug": "rag",
+    "title": "RAG（検索拡張生成）設計・実装ガイド",
+    "subtitle": "社内ドキュメントとLLMを繋ぐアーキテクチャ",
+    "tags": ["RAG", "ベクトルDB", "Embedding", "検索"],
+    "readingTime": 16,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/03-rag.html"
+  },
+  {
+    "id": "04",
+    "slug": "ai-agents",
+    "title": "AIエージェント設計パターン",
+    "subtitle": "LLMに「考えて行動させる」システム設計",
+    "tags": ["エージェント", "Tool Use", "ReAct", "マルチエージェント"],
+    "readingTime": 14,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/04-ai-agents.html"
+  },
+  {
+    "id": "05",
+    "slug": "code-generation-review",
+    "title": "コード生成・コードレビューへのAI活用",
+    "subtitle": "開発者の生産性を根本から変える実践テクニック",
+    "tags": ["コード生成", "GitHub Copilot", "Claude Code", "レビュー"],
+    "readingTime": 13,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/05-code-generation-review.html"
+  },
+  {
+    "id": "06",
+    "slug": "ai-sdlc",
+    "title": "AI活用によるSDLC改善",
+    "subtitle": "要件定義から保守まで、開発プロセス全体をAIで変える",
+    "tags": ["SDLC", "要件定義", "テスト", "ドキュメント生成"],
+    "readingTime": 15,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/06-ai-sdlc.html"
+  },
+  {
+    "id": "07",
+    "slug": "security-compliance-governance",
+    "title": "セキュリティ・コンプライアンス・ガバナンス",
+    "subtitle": "AIリスクを正しく理解し、組織として管理する",
+    "tags": ["セキュリティ", "ガバナンス", "AI Act", "リスク管理"],
+    "readingTime": 13,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/07-security-compliance-governance.html"
+  },
+  {
+    "id": "08",
+    "slug": "ai-adoption-roadmap",
+    "title": "チーム・組織へのAI導入ロードマップ",
+    "subtitle": "「やってみた」で終わらせないための計画と実行",
+    "tags": ["導入計画", "組織変革", "ロードマップ", "ROI"],
+    "readingTime": 8,
+    "publishedAt": "2026-03-25",
+    "path": "/articles/08-ai-adoption-roadmap.html"
+  }
+]

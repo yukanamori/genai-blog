@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チーム・組織へのAI導入ロードマップ | GENAI.ENG</title>
+  <meta name="description" content="「やってみた」で終わらせないためのAI導入計画と実行。成熟度モデル、12ヶ月ロードマップ、スキル習得の優先順位、ROI試算、今日から始める5つのアクションを実践的に解説。">
+  <meta property="og:title" content="チーム・組織へのAI導入ロードマップ | GENAI.ENG">
+  <meta property="og:description" content="「やってみた」で終わらせないためのAI導入計画と実行。成熟度モデル、12ヶ月ロードマップ、スキル習得の優先順位、ROI試算、今日から始める5つのアクションを実践的に解説。">
+  <meta property="og:url" content="https://genai-eng.dev/articles/08-ai-adoption-roadmap.html">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+  <!-- Reading Progress Bar -->
+  <div class="reading-progress" id="readingProgress"></div>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="site-logo">[<span>GEN</span>AI.ENG]</a>
+      <nav class="site-header__nav">
+        <a href="../index.html" class="site-header__back">← ALL ARTICLES</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Layout Wrapper -->
+  <div class="layout-wrapper">
+
+    <!-- TOC Sidebar -->
+    <aside class="toc-sidebar" id="tocSidebar">
+      <div class="toc-sidebar__inner">
+        <p class="toc-sidebar__label">目次</p>
+        <nav class="toc-nav">
+          <ol class="toc-list">
+            <li class="toc-list__item"><a href="#section-1" class="toc-link">AI活用成熟度モデル</a></li>
+            <li class="toc-list__item"><a href="#section-2" class="toc-link">12ヶ月ロードマップ</a></li>
+            <li class="toc-list__item"><a href="#section-3" class="toc-link">スキル習得の優先順位</a></li>
+            <li class="toc-list__item"><a href="#section-4" class="toc-link">ROI試算の考え方</a></li>
+            <li class="toc-list__item"><a href="#section-5" class="toc-link">今日から始める5つのアクション</a></li>
+          </ol>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="パンくずリスト">
+        <ol class="breadcrumb__list">
+          <li class="breadcrumb__item"><a href="../index.html" class="breadcrumb__link">GENAI.ENG</a></li>
+          <li class="breadcrumb__item breadcrumb__item--current">チーム・組織へのAI導入ロードマップ</li>
+        </ol>
+      </nav>
+
+      <!-- Article Header -->
+      <header class="article-header">
+        <div class="article-header__meta">
+          <span class="article-number">08</span>
+          <span class="article-card__badge" style="display:inline-block; background: #FF3D00; color: #0D0D0D; font-family: monospace; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 3px; vertical-align: middle; margin-left: 4px;">REFERENCE</span>
+          <span class="article-tag">導入計画</span>
+          <span class="article-tag">組織変革</span>
+          <span class="article-tag">ロードマップ</span>
+          <span class="article-tag">ROI</span>
+        </div>
+        <h1 class="article-header__title">チーム・組織へのAI導入ロードマップ</h1>
+        <p class="article-header__subtitle">「やってみた」で終わらせないための計画と実行</p>
+        <div class="article-header__info">
+          <span class="reading-time">8 min read</span>
+          <span class="publish-date">2026-03-25</span>
+        </div>
+      </header>
+
+      <!-- Article Body -->
+      <article class="article-body">
+
+        <!-- Section 1 -->
+        <section id="section-1">
+          <h2>1. AI活用成熟度モデル</h2>
+          <p>組織のAI活用状況は一夜にして変わりません。まず自分たちが今どの段階にいるかを正確に把握することが、次のステップを設計する出発点です。</p>
+
+          <div class="diagram">
+            <svg viewBox="0 0 750 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AI活用成熟度モデル 5段階">
+              <!-- Background -->
+              <rect width="750" height="120" fill="#141414" rx="8"/>
+
+              <!-- Level 1: 未着手 -->
+              <rect x="15" y="30" width="120" height="60" rx="6" fill="#1A1A1A" stroke="#444440" stroke-width="1.5"/>
+              <text x="75" y="55" fill="#888884" font-family="monospace" font-size="9" text-anchor="middle">Level 1</text>
+              <text x="75" y="72" fill="#E8E8E2" font-family="monospace" font-size="11" text-anchor="middle">未着手</text>
+              <text x="75" y="85" fill="#555551" font-family="monospace" font-size="8" text-anchor="middle">AIなし</text>
+
+              <!-- Arrow -->
+              <line x1="135" y1="60" x2="150" y2="60" stroke="#444440" stroke-width="1.5"/>
+              <polygon points="150,55 160,60 150,65" fill="#444440"/>
+
+              <!-- Level 2: 個人実験 -->
+              <rect x="161" y="30" width="120" height="60" rx="6" fill="#1A1A1A" stroke="#444440" stroke-width="1.5"/>
+              <text x="221" y="55" fill="#888884" font-family="monospace" font-size="9" text-anchor="middle">Level 2</text>
+              <text x="221" y="72" fill="#E8E8E2" font-family="monospace" font-size="11" text-anchor="middle">個人実験</text>
+              <text x="221" y="85" fill="#555551" font-family="monospace" font-size="8" text-anchor="middle">各自試行</text>
+
+              <!-- Arrow -->
+              <line x1="281" y1="60" x2="296" y2="60" stroke="#444440" stroke-width="1.5"/>
+              <polygon points="296,55 306,60 296,65" fill="#444440"/>
+
+              <!-- Level 3: チーム活用 (highlighted as current example) -->
+              <rect x="307" y="22" width="136" height="76" rx="6" fill="#FF3D00" fill-opacity="0.12" stroke="#FF3D00" stroke-width="2"/>
+              <text x="375" y="49" fill="#FF3D00" font-family="monospace" font-size="9" text-anchor="middle">Level 3</text>
+              <text x="375" y="66" fill="#FF3D00" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">チーム活用</text>
+              <text x="375" y="83" fill="#FF3D00" font-family="monospace" font-size="8" text-anchor="middle" opacity="0.8">共有・標準化開始</text>
+
+              <!-- Arrow -->
+              <line x1="443" y1="60" x2="458" y2="60" stroke="#444440" stroke-width="1.5"/>
+              <polygon points="458,55 468,60 458,65" fill="#444440"/>
+
+              <!-- Level 4: 組織標準 -->
+              <rect x="469" y="30" width="120" height="60" rx="6" fill="#1A1A1A" stroke="#444440" stroke-width="1.5"/>
+              <text x="529" y="55" fill="#888884" font-family="monospace" font-size="9" text-anchor="middle">Level 4</text>
+              <text x="529" y="72" fill="#E8E8E2" font-family="monospace" font-size="11" text-anchor="middle">組織標準</text>
+              <text x="529" y="85" fill="#555551" font-family="monospace" font-size="8" text-anchor="middle">ポリシー整備</text>
+
+              <!-- Arrow -->
+              <line x1="589" y1="60" x2="604" y2="60" stroke="#444440" stroke-width="1.5"/>
+              <polygon points="604,55 614,60 604,65" fill="#444440"/>
+
+              <!-- Level 5: 継続改善 -->
+              <rect x="615" y="30" width="120" height="60" rx="6" fill="#1A1A1A" stroke="#444440" stroke-width="1.5"/>
+              <text x="675" y="55" fill="#888884" font-family="monospace" font-size="9" text-anchor="middle">Level 5</text>
+              <text x="675" y="72" fill="#E8E8E2" font-family="monospace" font-size="11" text-anchor="middle">継続改善</text>
+              <text x="675" y="85" fill="#555551" font-family="monospace" font-size="8" text-anchor="middle">ROI最適化</text>
+            </svg>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>レベル</th>
+                  <th>特徴</th>
+                  <th>典型的な阻害要因</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>L1 未着手</strong></td>
+                  <td>AIツールの評価・利用がほぼゼロ</td>
+                  <td>経営・管理職の関心不足、予算未確保</td>
+                </tr>
+                <tr>
+                  <td><strong>L2 個人実験</strong></td>
+                  <td>一部のエンジニアが個人的に試している</td>
+                  <td>ノウハウ共有なし、ツールがバラバラ</td>
+                </tr>
+                <tr>
+                  <td><strong>L3 チーム活用</strong></td>
+                  <td>チーム内でツール統一、事例共有が始まる</td>
+                  <td>セキュリティポリシー未整備、スキルムラ</td>
+                </tr>
+                <tr>
+                  <td><strong>L4 組織標準</strong></td>
+                  <td>ガバナンス・ポリシー整備、全社展開</td>
+                  <td>変化への抵抗、レガシープロセスとの摩擦</td>
+                </tr>
+                <tr>
+                  <td><strong>L5 継続改善</strong></td>
+                  <td>ROI計測・フィードバックループが機能</td>
+                  <td>計測指標の陳腐化、技術の急速な変化への追随</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="section-2">
+          <h2>2. 12ヶ月ロードマップ</h2>
+          <p>AI導入を3つのフェーズに分け、各フェーズで達成すべきマイルストーンを設定します。完璧なロードマップより、実行できるシンプルな計画を優先してください。</p>
+
+          <div class="diagram">
+            <svg viewBox="0 0 750 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="12ヶ月AI導入ロードマップ ガントチャート">
+              <!-- Background -->
+              <rect width="750" height="200" fill="#141414" rx="8"/>
+
+              <!-- Header row -->
+              <text x="20" y="30" fill="#888884" font-family="monospace" font-size="10">PHASE</text>
+              <!-- Month labels -->
+              <text x="175" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M1</text>
+              <text x="225" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M2</text>
+              <text x="275" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M3</text>
+              <text x="325" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M4</text>
+              <text x="375" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M5</text>
+              <text x="425" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M6</text>
+              <text x="475" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M7</text>
+              <text x="525" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M8</text>
+              <text x="575" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M9</text>
+              <text x="620" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M10</text>
+              <text x="668" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M11</text>
+              <text x="716" y="30" fill="#555551" font-family="monospace" font-size="9" text-anchor="middle">M12</text>
+
+              <!-- Divider -->
+              <line x1="155" y1="36" x2="740" y2="36" stroke="#2A2A2A" stroke-width="1"/>
+
+              <!-- Phase 1: 月1-3 -->
+              <text x="20" y="65" fill="#FF3D00" font-family="monospace" font-size="10" font-weight="bold">Phase 1</text>
+              <text x="20" y="78" fill="#888884" font-family="monospace" font-size="8">学習・評価期</text>
+              <rect x="155" y="50" width="145" height="22" rx="3" fill="#FF3D00" fill-opacity="0.7"/>
+              <text x="227" y="65" fill="#0D0D0D" font-family="monospace" font-size="9" font-weight="bold" text-anchor="middle">ツール評価・個人利用開始</text>
+
+              <!-- Phase 1 sub-tasks -->
+              <rect x="155" y="76" width="145" height="14" rx="2" fill="#FF3D00" fill-opacity="0.25"/>
+              <text x="227" y="86" fill="#E8E8E2" font-family="monospace" font-size="8" text-anchor="middle">効果計測設計</text>
+
+              <!-- Phase 2: 月4-6 -->
+              <text x="20" y="115" fill="#FF3D00" font-family="monospace" font-size="10" font-weight="bold">Phase 2</text>
+              <text x="20" y="128" fill="#888884" font-family="monospace" font-size="8">パイロット期</text>
+              <rect x="305" y="100" width="145" height="22" rx="3" fill="#FF3D00" fill-opacity="0.7"/>
+              <text x="377" y="115" fill="#0D0D0D" font-family="monospace" font-size="9" font-weight="bold" text-anchor="middle">チーム適用・効果測定</text>
+
+              <rect x="305" y="126" width="145" height="14" rx="2" fill="#FF3D00" fill-opacity="0.25"/>
+              <text x="377" y="136" fill="#E8E8E2" font-family="monospace" font-size="8" text-anchor="middle">プロセス組込み</text>
+
+              <!-- Phase 3: 月7-12 -->
+              <text x="20" y="165" fill="#FF3D00" font-family="monospace" font-size="10" font-weight="bold">Phase 3</text>
+              <text x="20" y="178" fill="#888884" font-family="monospace" font-size="8">展開・標準化期</text>
+              <rect x="455" y="150" width="280" height="22" rx="3" fill="#FF3D00" fill-opacity="0.7"/>
+              <text x="595" y="165" fill="#0D0D0D" font-family="monospace" font-size="9" font-weight="bold" text-anchor="middle">組織全体展開・社内標準化</text>
+
+              <rect x="455" y="176" width="280" height="14" rx="2" fill="#FF3D00" fill-opacity="0.25"/>
+              <text x="595" y="186" fill="#E8E8E2" font-family="monospace" font-size="8" text-anchor="middle">次期計画・ROI最適化</text>
+            </svg>
+          </div>
+
+          <h3>各フェーズのマイルストーンと成果物</h3>
+
+          <h4>Phase 1（月1〜3）：学習・評価期</h4>
+          <ul>
+            <li><strong>マイルストーン：</strong>主要AIツール3種類の評価完了、個人での日常的な利用開始</li>
+            <li><strong>成果物：</strong>ツール評価レポート、効果計測フレームワーク、個人利用ガイドライン（初版）</li>
+            <li><strong>典型的な活動：</strong>GitHub Copilot・Claude API・ChatGPT APIの評価PoC、週1回の社内勉強会開始</li>
+          </ul>
+
+          <h4>Phase 2（月4〜6）：パイロット期</h4>
+          <ul>
+            <li><strong>マイルストーン：</strong>1チーム以上での継続的なAI活用開始、定量的な効果測定の実施</li>
+            <li><strong>成果物：</strong>AI利用ポリシー（正式版）、パイロット結果レポート、プロンプトライブラリ</li>
+            <li><strong>典型的な活動：</strong>コードレビュー支援・テスト生成への組込み、Slack等でのナレッジ共有チャンネル開設</li>
+          </ul>
+
+          <h4>Phase 3（月7〜12）：展開・標準化期</h4>
+          <ul>
+            <li><strong>マイルストーン：</strong>全エンジニアへの展開完了、ガバナンス体制の稼働</li>
+            <li><strong>成果物：</strong>AI活用社内標準、ROI報告書、次年度ロードマップ</li>
+            <li><strong>典型的な活動：</strong>全社向け研修実施、AI利用承認フローの運用開始、四半期ごとの効果レビュー</li>
+          </ul>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="section-3">
+          <h2>3. スキル習得の優先順位</h2>
+          <p>すべてのスキルを同時に習得しようとすると何も身につきません。優先度を絞り、実務で使いながら学ぶことが最短経路です。</p>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>優先度</th>
+                  <th>スキル</th>
+                  <th>習得目安</th>
+                  <th>主な学習リソース</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="risk-badge risk-badge--high">最高</span></td>
+                  <td><strong>プロンプトエンジニアリング</strong></td>
+                  <td>2週間</td>
+                  <td><a href="02-prompt-engineering.html" class="article-link">本ブログ記事 02</a></td>
+                </tr>
+                <tr>
+                  <td><span class="risk-badge risk-badge--medium">高</span></td>
+                  <td><strong>RAG実装</strong></td>
+                  <td>1ヶ月</td>
+                  <td><a href="03-rag-implementation.html" class="article-link">本ブログ記事 03</a></td>
+                </tr>
+                <tr>
+                  <td><span class="risk-badge risk-badge--medium">高</span></td>
+                  <td><strong>AIコーディングツール実践</strong></td>
+                  <td>1週間</td>
+                  <td><a href="05-ai-coding-tools.html" class="article-link">本ブログ記事 05</a></td>
+                </tr>
+                <tr>
+                  <td><span class="risk-badge risk-badge--low">中</span></td>
+                  <td><strong>AIエージェント設計</strong></td>
+                  <td>2ヶ月</td>
+                  <td><a href="04-ai-agents.html" class="article-link">本ブログ記事 04</a></td>
+                </tr>
+                <tr>
+                  <td><span class="risk-badge risk-badge--low">中</span></td>
+                  <td><strong>セキュリティ・ガバナンス</strong></td>
+                  <td>2週間</td>
+                  <td><a href="07-security-compliance-governance.html" class="article-link">本ブログ記事 07</a></td>
+                </tr>
+                <tr>
+                  <td><span class="risk-badge" style="background:#2A2A2A; color:#888884; border:1px solid #444440;">参考</span></td>
+                  <td><strong>LLM基礎理論</strong></td>
+                  <td>1ヶ月</td>
+                  <td><a href="01-llm-fundamentals.html" class="article-link">本ブログ記事 01</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>プロンプトエンジニアリングを最初に優先する理由は、他のすべてのAI活用スキルの基盤になるからです。RAG実装やAIエージェントも、質の高いプロンプト設計なしには機能しません。AIコーディングツールは学習コストが低い割にすぐ効果が出るため、早期に習得して日常的に使いながら他のスキルを習得する順番が効率的です。</p>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="section-4">
+          <h2>4. ROI試算の考え方</h2>
+          <p>AI導入の投資対効果を経営層に説明するためには、コストと効果を定量的に示す必要があります。以下のフレームワークを参考に、自チームの数字に当てはめて試算してください。</p>
+
+          <h3>コスト・効果フレームワーク</h3>
+          <div class="code-block">
+            <div class="code-block__header">
+              <span class="code-block__lang">TEXT</span>
+              <span class="code-block__label">ROI計算式</span>
+            </div>
+            <pre class="code-block__pre"><code>月次コスト = APIコスト + ライセンス費 + 学習コスト（工数換算）
+
+月次効果  = 工数削減量（時間）× 人月単価（円/時間）
+
+月次ROI   = (月次効果 - 月次コスト) / 月次コスト × 100%</code></pre>
+          </div>
+
+          <h3>試算例（エンジニア5名チームの場合）</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>項目</th>
+                  <th>月次コスト / 効果（概算）</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Claude API（開発利用）</td>
+                  <td style="color: #FF6B4A;">- ¥15,000/月</td>
+                </tr>
+                <tr>
+                  <td>GitHub Copilot（5名）</td>
+                  <td style="color: #FF6B4A;">- ¥10,000/月</td>
+                </tr>
+                <tr>
+                  <td>学習投資（初期3ヶ月間）</td>
+                  <td style="color: #FF6B4A;">- ¥50,000/月 ※一時的</td>
+                </tr>
+                <tr>
+                  <td>コード作成工数削減（30% × 5名）</td>
+                  <td style="color: #4AFF91;">+ ¥300,000/月相当</td>
+                </tr>
+                <tr>
+                  <td>レビュー時間削減（25%）</td>
+                  <td style="color: #4AFF91;">+ ¥100,000/月相当</td>
+                </tr>
+                <tr style="border-top: 1px solid #444440; font-weight: bold;">
+                  <td><strong>月次純効果（定常時）</strong></td>
+                  <td style="color: #4AFF91;"><strong>+ ¥375,000/月相当</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p><em>※ 人月単価80万円、月160時間稼働として試算。コード作成が業務の40%と仮定し30%削減で計算。実際の数字はチームの作業内訳と単価で調整してください。なお、30%削減は参考値であり、実際の効果はタスク種別・チームスキル・プロジェクト特性により大きく異なります（業界調査では10〜50%の幅で報告されています）。</em></p>
+
+          <h3>定性的な効果も忘れずに</h3>
+          <p>ROI試算では定量化しにくい効果も重要です。エンジニアの満足度向上・採用競争力・技術的負債の削減速度・ドキュメント品質の向上など、数字に現れにくいが中長期的に大きな価値を持つ要素も経営層に伝えることを忘れないでください。</p>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="section-5">
+          <h2>5. 今日から始める5つのアクション</h2>
+          <p>完璧なロードマップを作ることよりも、今日1つでも行動することの方が何十倍も価値があります。以下の5つのアクションは、明日の業務から即座に実行できます。</p>
+
+          <div class="key-points">
+            <div class="key-point">
+              <span class="key-point__number">01</span>
+              <div class="key-point__content">
+                <strong>まず自分のタスクにAIを1週間使い続ける</strong>
+                <p>コードレビュー依頼、議事録整理、テスト設計など、毎日の業務でAIを意識的に使う。1週間後に「何が役に立ったか」を振り返る。最初の1週間が最も重要な学習期間です。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">02</span>
+              <div class="key-point__content">
+                <strong>使ったプロンプトをチームのGitリポジトリに記録し始める</strong>
+                <p><code>prompts/</code>ディレクトリを作り、効果的だったプロンプトをMarkdownで記録する。プロンプトライブラリはチームの知識資産になります。最初から完璧を目指さず、とにかく記録を始めることが重要です。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">03</span>
+              <div class="key-point__content">
+                <strong>週次チームミーティングで「今週のAI活用事例」を5分共有する</strong>
+                <p>毎週1人が5分で「こう使ったら効果的だった（または使えなかった）」を共有する。失敗事例も同様に価値があります。半年後にはチーム全員のスキルが底上げされています。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">04</span>
+              <div class="key-point__content">
+                <strong>本番環境で利用するツールのセキュリティポリシーを情報システム部と確認する</strong>
+                <p>「使っている」と「組織として承認されている」は別の話です。今使っているAIツールが組織のデータポリシーに適合しているかを確認し、問題があれば早期に対処する。インシデント後の対処より、事前確認の方がはるかに安価です。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">05</span>
+              <div class="key-point__content">
+                <strong>3ヶ月後の目標を1文で書く</strong>
+                <p>例：「チームのコードレビュー時間を20%削減する」「テストコードの記述時間を週2時間削減する」。曖昧な目標ではなく、測定可能な目標を1文で設定することで、3ヶ月後に自己評価ができます。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout callout--accent">
+            <div class="callout__icon">!</div>
+            <div class="callout__content">
+              <p class="callout__title">完璧な計画より小さな実行</p>
+              <p>AI活用の最大の障壁は技術的な難しさではなく、「準備が整ったら始めよう」という先送り思考です。技術は急速に変化するため、完璧なロードマップを作ることに時間をかけるより、今日1つ試してみることが最も重要な投資です。</p>
+              <p>最初の1週間で感じた「これは使える」という感覚が、チーム全体のAI導入を牽引する原動力になります。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Article Summary -->
+        <section class="article-summary">
+          <h2>まとめ</h2>
+          <div class="key-points">
+            <div class="key-point">
+              <span class="key-point__number">01</span>
+              <div class="key-point__content">
+                <strong>成熟度モデルで現状を把握し、次の1ステップだけに集中する</strong>
+                <p>L1〜L5の成熟度モデルで自チームの位置を把握し、一気にL5を目指すのではなく、次のレベルへの移行に集中することが現実的な戦略です。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">02</span>
+              <div class="key-point__content">
+                <strong>ROIは定量・定性の両面で継続的に計測する</strong>
+                <p>工数削減の定量効果だけでなく、エンジニア満足度や品質向上などの定性効果も含めて経営層に伝えることで、継続的な投資判断を支援できます。</p>
+              </div>
+            </div>
+            <div class="key-point">
+              <span class="key-point__number">03</span>
+              <div class="key-point__content">
+                <strong>今日の小さな実行が組織変革の出発点</strong>
+                <p>5つのアクションのうち1つだけでも今日から始めてください。個人の実験が口コミでチームに広がり、やがて組織標準になる、というのが最もよく機能するAI導入の経路です。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </article>
+
+      <!-- Article Navigation -->
+      <nav class="article-nav" aria-label="前後の記事">
+        <a href="07-security-compliance-governance.html" class="article-nav__link article-nav__link--prev">
+          <span class="article-nav__label">← PREV</span>
+          <span class="article-nav__title">セキュリティ・コンプライアンス・ガバナンス</span>
+        </a>
+        <a href="../index.html" class="article-nav__link article-nav__link--next">
+          <span class="article-nav__label">NEXT →</span>
+          <span class="article-nav__title">記事一覧へ戻る</span>
+        </a>
+      </nav>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">&copy; 2026 Kanamori Yu</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/nav.js"></script>
+  <script src="../assets/js/animations.js"></script>
+  <script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

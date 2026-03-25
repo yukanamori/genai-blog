@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GenAI Engineering — 生成AI開発実践ブログ</title>
+  <meta name="description" content="生成AIをソフトウェア開発に活用するための基礎理論・技術・プラクティス。LLM、プロンプトエンジニアリング、RAG、AIエージェント、セキュリティを体系的に解説。">
+  <meta property="og:title" content="GenAI Engineering — 生成AI開発実践ブログ">
+  <meta property="og:description" content="生成AIをソフトウェア開発に活用するための基礎理論・技術・プラクティス。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+</head>
+<body>
+
+<!-- ── Site Header ── -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <span>8 ARTICLES</span>
+      <span>2026</span>
+    </div>
+    <button class="site-header__nav-toggle" aria-label="メニュー" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main class="layout-index">
+
+  <!-- Hero -->
+  <section class="index-hero">
+    <p class="index-hero__label">GENAI ENGINEERING</p>
+    <h1 class="index-hero__title">生成AIを<br>開発に活かす。</h1>
+    <p class="index-hero__subtitle">
+      LLMの基礎から、プロンプト設計、RAG実装、AIエージェント構築、そしてガバナンスまで。
+      ソフトウェア開発における生成AI活用の理論と実践を体系的に解説するテックブログ。
+    </p>
+  </section>
+
+  <!-- Search -->
+  <div class="search-bar" role="search">
+    <div class="search-bar__input-wrap">
+      <span class="search-bar__icon">/ SEARCH</span>
+      <input
+        class="search-bar__input"
+        type="text"
+        placeholder="記事を検索..."
+        aria-label="記事を検索"
+        autocomplete="off"
+        spellcheck="false"
+      >
+    </div>
+    <div class="search-results" role="region" aria-label="検索結果" aria-live="polite"></div>
+  </div>
+
+  <!-- Article List -->
+  <nav class="article-list" aria-label="記事一覧">
+    <div class="article-list__header">
+      <span class="article-list__heading">ALL ARTICLES</span>
+      <span class="article-list__count">08</span>
+    </div>
+
+    <a href="articles/01-llm-transformer-basics.html" class="article-card">
+      <span class="article-card__number">01</span>
+      <span class="article-card__body">
+        <span class="article-card__title">LLM・トランスフォーマーの基礎理論</span>
+        <span class="article-card__subtitle">生成AIはなぜ「賢く」見えるのか — 仕組みから理解するLLM</span>
+        <span class="article-card__tags">
+          <span class="tag">LLM</span>
+          <span class="tag">Transformer</span>
+          <span class="tag">基礎理論</span>
+          <span class="tag">アーキテクチャ</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">14 min</span>
+      </span>
+    </a>
+
+    <a href="articles/02-prompt-engineering.html" class="article-card">
+      <span class="article-card__number">02</span>
+      <span class="article-card__body">
+        <span class="article-card__title">プロンプトエンジニアリング実践ガイド</span>
+        <span class="article-card__subtitle">AIへの「正しい指示の出し方」は設計スキルである</span>
+        <span class="article-card__tags">
+          <span class="tag">プロンプト</span>
+          <span class="tag">実践</span>
+          <span class="tag">Chain-of-Thought</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">12 min</span>
+      </span>
+    </a>
+
+    <a href="articles/03-rag.html" class="article-card">
+      <span class="article-card__number">03</span>
+      <span class="article-card__body">
+        <span class="article-card__title">RAG（検索拡張生成）設計・実装ガイド</span>
+        <span class="article-card__subtitle">社内ドキュメントとLLMを繋ぐアーキテクチャ</span>
+        <span class="article-card__tags">
+          <span class="tag">RAG</span>
+          <span class="tag">ベクトルDB</span>
+          <span class="tag">Embedding</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">16 min</span>
+      </span>
+    </a>
+
+    <a href="articles/04-ai-agents.html" class="article-card">
+      <span class="article-card__number">04</span>
+      <span class="article-card__body">
+        <span class="article-card__title">AIエージェント設計パターン</span>
+        <span class="article-card__subtitle">LLMに「考えて行動させる」システム設計</span>
+        <span class="article-card__tags">
+          <span class="tag">エージェント</span>
+          <span class="tag">Tool Use</span>
+          <span class="tag">ReAct</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">14 min</span>
+      </span>
+    </a>
+
+    <a href="articles/05-code-generation-review.html" class="article-card">
+      <span class="article-card__number">05</span>
+      <span class="article-card__body">
+        <span class="article-card__title">コード生成・コードレビューへのAI活用</span>
+        <span class="article-card__subtitle">開発者の生産性を根本から変える実践テクニック</span>
+        <span class="article-card__tags">
+          <span class="tag">コード生成</span>
+          <span class="tag">GitHub Copilot</span>
+          <span class="tag">Claude Code</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">13 min</span>
+      </span>
+    </a>
+
+    <a href="articles/06-ai-sdlc.html" class="article-card">
+      <span class="article-card__number">06</span>
+      <span class="article-card__body">
+        <span class="article-card__title">AI活用によるSDLC改善</span>
+        <span class="article-card__subtitle">要件定義から保守まで、開発プロセス全体をAIで変える</span>
+        <span class="article-card__tags">
+          <span class="tag">SDLC</span>
+          <span class="tag">要件定義</span>
+          <span class="tag">テスト</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">15 min</span>
+      </span>
+    </a>
+
+    <a href="articles/07-security-compliance-governance.html" class="article-card">
+      <span class="article-card__number">07</span>
+      <span class="article-card__body">
+        <span class="article-card__title">セキュリティ・コンプライアンス・ガバナンス</span>
+        <span class="article-card__subtitle">AIリスクを正しく理解し、組織として管理する</span>
+        <span class="article-card__tags">
+          <span class="tag">セキュリティ</span>
+          <span class="tag">ガバナンス</span>
+          <span class="tag">AI Act</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">13 min</span>
+      </span>
+    </a>
+
+    <a href="articles/08-ai-adoption-roadmap.html" class="article-card">
+      <span class="article-card__number">08</span>
+      <span class="article-card__body">
+        <span class="article-card__title">チーム・組織へのAI導入ロードマップ</span>
+        <span class="article-card__subtitle">「やってみた」で終わらせないための計画と実行</span>
+        <span class="article-card__tags">
+          <span class="tag">導入計画</span>
+          <span class="tag">組織変革</span>
+          <span class="tag">ロードマップ</span>
+        </span>
+      </span>
+      <span class="article-card__meta">
+        <span class="article-card__reading-time">8 min</span>
+        <span class="article-card__badge">REFERENCE</span>
+      </span>
+    </a>
+
+  </nav>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links" aria-label="フッターナビゲーション">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script src="assets/js/search.js"></script>
+<script src="assets/js/animations.js"></script>
+</body>
+</html>

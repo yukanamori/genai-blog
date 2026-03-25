@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG（検索拡張生成）設計・実装ガイド — GenAI Engineering</title>
+  <meta name="description" content="社内ドキュメントとLLMを繋ぐアーキテクチャ">
+  <meta property="og:title" content="RAG（検索拡張生成）設計・実装ガイド — GenAI Engineering">
+  <meta property="og:description" content="社内ドキュメントとLLMを繋ぐアーキテクチャ">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/03-rag.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/03-rag.html">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
+
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
+    </div>
+  </div>
+</header>
+
+<!-- Article Layout -->
+<div class="layout-article">
+
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">RAGが解決する問題</a></li>
+      <li><a href="#section-2">RAGアーキテクチャ全体図</a></li>
+      <li><a href="#section-3">Embeddingとベクトル検索</a></li>
+      <li><a href="#section-4">チャンキング戦略</a></li>
+      <li><a href="#section-5">RAG品質評価</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>RAG（検索拡張生成）設計・実装ガイド</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">03</p>
+      <h1 class="article-header__title">RAG（検索拡張生成）設計・実装ガイド</h1>
+      <p class="article-header__subtitle">社内ドキュメントとLLMを繋ぐアーキテクチャ</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">16 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">RAG</span>
+        <span class="article-header__meta-item tag">ベクトルDB</span>
+        <span class="article-header__meta-item tag">Embedding</span>
+        <span class="article-header__meta-item tag">検索</span>
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <article class="article-body">
+
+      <p>
+        「GPT-4に社内マニュアルの内容を聞いたら、全然違うことを答えた」——LLMを業務に組み込もうとした開発者なら一度は経験する壁です。この問題の根本は、汎用LLMが<strong>あなたの組織固有の知識を持っていない</strong>ことにあります。RAG（Retrieval-Augmented Generation）は、LLMの強力な言語理解・生成能力を保ちながら、外部の最新情報・組織固有の情報を動的に注入できるアーキテクチャです。本記事では、RAGの設計から実装、品質評価まで体系的に解説します。
+      </p>
+
+      <!-- ============================================================
+           Section 1: RAGが解決する問題
+           ============================================================ -->
+      <h2 id="section-1">1. RAGが解決する問題</h2>
+
+      <p>
+        LLMには構造的に避けられない2つの限界があります。これを理解することが、RAGを適切に設計する第一歩です。
+      </p>
+
+      <h3>LLMの2つの本質的限界</h3>
+
+      <p>
+        第一の限界は<strong>知識カットオフ（Knowledge Cutoff）</strong>です。LLMは特定の時点までのデータで学習されており、それ以降の情報——昨日リリースされた製品仕様、先月改訂された社内規約、今朝起きた障害事例——を原理的に知ることができません。
+      </p>
+
+      <p>
+        第二の限界は<strong>幻覚（Hallucination）</strong>です。LLMは「それらしい文章」を生成するよう最適化されているため、知らないことを聞かれると、もっともらしいが事実と異なる情報を自信を持って返すことがあります。特に固有名詞・数値・手順書のような具体的事実で起きやすく、業務利用では致命的なリスクになります。
+      </p>
+
+      <p>
+        RAGはこの2つの問題を、<strong>回答生成時に関連ドキュメントを検索してコンテキストとしてLLMに渡す</strong>という仕組みで解決します。LLMは「自分の記憶」ではなく「提供された文書」をもとに回答するため、最新情報への対応と幻覚の抑制が同時に達成できます。
+      </p>
+
+      <h3>RAG vs ファインチューニング：選択基準</h3>
+
+      <p>
+        「どうせなら自社データでファインチューニングすれば良いのでは？」という疑問は自然です。しかし両者は目的が異なり、正しく使い分けることが重要です。以下のフローチャートを参考にしてください。
+      </p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RAGとファインチューニングの選択フローチャート">
+          <defs>
+            <marker id="arr-rag" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+          </defs>
+          <rect width="700" height="300" fill="#0D0D0D"/>
+
+          <!-- Start -->
+          <rect x="270" y="14" width="160" height="36" rx="18" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="350" y="37" text-anchor="middle" font-family="monospace" font-size="13" fill="#E8E8E2">知識を更新したい？</text>
+
+          <!-- Arrow down from start -->
+          <line x1="350" y1="50" x2="350" y2="78" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+
+          <!-- Diamond 1: 更新頻度が高い？ -->
+          <polygon points="350,80 450,120 350,160 250,120" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="350" y="116" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">更新頻度が</text>
+          <text x="350" y="132" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">高い？</text>
+
+          <!-- Yes right → RAG -->
+          <line x1="450" y1="120" x2="540" y2="120" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+          <text x="490" y="113" text-anchor="middle" font-family="monospace" font-size="11" fill="#FF3D00">Yes</text>
+          <rect x="540" y="100" width="120" height="40" rx="6" fill="#FF3D00"/>
+          <text x="600" y="125" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#0D0D0D">RAG</text>
+
+          <!-- No down from diamond 1 -->
+          <line x1="350" y1="160" x2="350" y2="188" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+          <text x="360" y="178" font-family="monospace" font-size="11" fill="#888884">No</text>
+
+          <!-- Fine-tuning box -->
+          <rect x="270" y="190" width="160" height="40" rx="6" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="350" y="215" text-anchor="middle" font-family="monospace" font-size="13" fill="#E8E8E2">Fine-tuning</text>
+
+          <!-- No branch from start (left) -->
+          <line x1="270" y1="32" x2="120" y2="32" stroke="#FF3D00" stroke-width="1.5"/>
+          <line x1="120" y1="32" x2="120" y2="78" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+          <text x="195" y="25" text-anchor="middle" font-family="monospace" font-size="11" fill="#888884">No</text>
+
+          <!-- Diamond 2: スタイルを変えたい？ -->
+          <polygon points="120,80 220,120 120,160 20,120" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="120" y="116" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">スタイルを</text>
+          <text x="120" y="132" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">変えたい？</text>
+
+          <!-- Yes → Fine-tuning (left side) -->
+          <line x1="20" y1="120" x2="20" y2="210" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+          <line x1="20" y1="210" x2="270" y2="210" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="10" y="165" text-anchor="middle" font-family="monospace" font-size="11" fill="#FF3D00">Yes</text>
+
+          <!-- No down → プロンプトで十分 -->
+          <line x1="120" y1="160" x2="120" y2="240" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-rag)"/>
+          <text x="130" y="205" font-family="monospace" font-size="11" fill="#888884">No</text>
+          <rect x="40" y="242" width="160" height="40" rx="6" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="120" y="267" text-anchor="middle" font-family="monospace" font-size="12" fill="#888884">プロンプトで十分</text>
+        </svg>
+        <figcaption>図1: RAG vs ファインチューニングの選択フローチャート — 知識の鮮度とスタイル変更の要否が分岐点</figcaption>
+      </div>
+
+      <p>
+        ファインチューニングはモデルの「振る舞い・文体・推論スタイル」を変えることに適しています。一方、RAGは「特定の事実・最新情報・組織固有の知識」を提供するのに適しており、データが頻繁に更新される場面では圧倒的にコスト効率が良い選択です。
+      </p>
+
+      <h3>RAGが特に有効なシナリオ</h3>
+
+      <ul>
+        <li><strong>社内ナレッジベース</strong> — 過去の障害対応事例、設計書、議事録などを参照した質問応答</li>
+        <li><strong>法令・社内規約の参照</strong> — 頻繁に改訂される規約文書をリアルタイムに参照する必要がある場面</li>
+        <li><strong>製品マニュアル・FAQ</strong> — カスタマーサポート自動化で正確な製品情報を返す必要がある場合</li>
+        <li><strong>コードリポジトリ検索</strong> — 社内ライブラリの使い方やアーキテクチャ決定記録（ADR）の照会</li>
+      </ul>
+
+      <!-- ============================================================
+           Section 2: RAGアーキテクチャ全体図
+           ============================================================ -->
+      <h2 id="section-2">2. RAGアーキテクチャ全体図</h2>
+
+      <p>
+        RAGは大きく2つのパイプラインで構成されます。ドキュメントを事前にベクトル化してDBに格納する<strong>インデキシングパイプライン</strong>と、ユーザーの質問に答えるために関連文書を検索してLLMに渡す<strong>クエリパイプライン</strong>です。
+      </p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RAGアーキテクチャ全体図：インデキシングパイプラインとクエリパイプライン">
+          <defs>
+            <marker id="arr-arch" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+            <marker id="arr-query" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#888884"/>
+            </marker>
+          </defs>
+          <rect width="800" height="280" fill="#0D0D0D"/>
+
+          <!-- Pipeline labels -->
+          <text x="14" y="72" font-family="monospace" font-size="10" fill="#FF3D00" writing-mode="tb-rl" transform="rotate(0)">INDEXING</text>
+          <text x="14" y="200" font-family="monospace" font-size="10" fill="#888884">QUERY</text>
+
+          <!-- ====== Indexing Pipeline (top row) ====== -->
+          <!-- 文書 -->
+          <rect x="50" y="30" width="90" height="40" rx="4" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="95" y="55" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">文書</text>
+
+          <line x1="140" y1="50" x2="168" y2="50" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-arch)"/>
+
+          <!-- テキスト抽出 -->
+          <rect x="170" y="30" width="100" height="40" rx="4" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="220" y="55" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">テキスト抽出</text>
+
+          <line x1="270" y1="50" x2="298" y2="50" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-arch)"/>
+
+          <!-- チャンキング -->
+          <rect x="300" y="30" width="100" height="40" rx="4" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="350" y="55" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">チャンキング</text>
+
+          <line x1="400" y1="50" x2="428" y2="50" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-arch)"/>
+
+          <!-- Embedding -->
+          <rect x="430" y="30" width="100" height="40" rx="4" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="480" y="55" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">Embedding</text>
+
+          <line x1="530" y1="50" x2="558" y2="50" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-arch)"/>
+
+          <!-- ベクトルDB -->
+          <rect x="560" y="20" width="110" height="60" rx="4" fill="#FF3D00"/>
+          <text x="615" y="47" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#0D0D0D">ベクトルDB</text>
+          <text x="615" y="63" text-anchor="middle" font-family="monospace" font-size="10" fill="#0D0D0D">Vector Store</text>
+
+          <!-- Divider line -->
+          <line x1="30" y1="100" x2="770" y2="100" stroke="#2A2A2A" stroke-width="1" stroke-dasharray="6,4"/>
+
+          <!-- ====== Query Pipeline (bottom row) ====== -->
+          <!-- ユーザー質問 -->
+          <rect x="50" y="160" width="100" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="100" y="183" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">ユーザー質問</text>
+
+          <line x1="150" y1="180" x2="178" y2="180" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-query)"/>
+
+          <!-- Embedding (query) -->
+          <rect x="180" y="160" width="90" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="225" y="183" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">Embedding</text>
+
+          <line x1="270" y1="180" x2="298" y2="180" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-query)"/>
+
+          <!-- 類似検索 -->
+          <rect x="300" y="160" width="90" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="345" y="183" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">類似検索</text>
+
+          <!-- Arrow from vectorDB down to 類似検索 -->
+          <line x1="615" y1="80" x2="615" y2="140" stroke="#FF3D00" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <line x1="615" y1="140" x2="345" y2="140" stroke="#FF3D00" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <line x1="345" y1="140" x2="345" y2="158" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-arch)"/>
+
+          <line x1="390" y1="180" x2="418" y2="180" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-query)"/>
+
+          <!-- コンテキスト挿入 -->
+          <rect x="420" y="160" width="110" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="475" y="183" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">コンテキスト挿入</text>
+
+          <line x1="530" y1="180" x2="558" y2="180" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-query)"/>
+
+          <!-- LLM -->
+          <rect x="560" y="160" width="70" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1.5"/>
+          <text x="595" y="183" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">LLM</text>
+
+          <line x1="630" y1="180" x2="658" y2="180" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-query)"/>
+
+          <!-- 回答 -->
+          <rect x="660" y="160" width="80" height="40" rx="4" fill="#1A1A1A" stroke="#E8E8E2" stroke-width="1.5"/>
+          <text x="700" y="183" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">回答</text>
+
+          <!-- Labels -->
+          <text x="400" y="250" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">インデキシングパイプライン（事前処理） ↑   クエリパイプライン（リアルタイム） ↑</text>
+        </svg>
+        <figcaption>図2: RAGアーキテクチャ全体図 — インデキシング（上段）とクエリ（下段）の2パイプライン構成</figcaption>
+      </div>
+
+      <h3>コンポーネント一覧</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>コンポーネント</th>
+            <th>役割</th>
+            <th>主要ツール例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Document Loader</td>
+            <td>文書読み込み・テキスト抽出</td>
+            <td>LangChain, LlamaIndex</td>
+          </tr>
+          <tr>
+            <td>Text Splitter</td>
+            <td>文書をチャンクに分割</td>
+            <td>RecursiveCharacterTextSplitter</td>
+          </tr>
+          <tr>
+            <td>Embedding Model</td>
+            <td>テキスト→ベクトル変換</td>
+            <td>text-embedding-3-small, Cohere</td>
+          </tr>
+          <tr>
+            <td>Vector Store</td>
+            <td>ベクトル格納・類似検索</td>
+            <td>pgvector, Chroma, Pinecone</td>
+          </tr>
+          <tr>
+            <td>LLM</td>
+            <td>コンテキストをもとに回答生成</td>
+            <td>GPT-4o, Claude, Gemini</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ============================================================
+           Section 3: Embeddingとベクトル検索
+           ============================================================ -->
+      <h2 id="section-3">3. Embeddingとベクトル検索</h2>
+
+      <h3>Embeddingの直感的理解</h3>
+
+      <p>
+        Embeddingとは、テキストを数百〜数千次元の浮動小数点ベクトルに変換する技術です。直感的なイメージとして、<strong>意味が近い文書ほどベクトル空間上での距離が近くなる</strong>ように設計されています。「犬」と「イヌ」は非常に近い位置に、「犬」と「飛行機」は遠い位置にマッピングされます。
+      </p>
+
+      <p>
+        この性質を利用することで、「キーワードの完全一致」ではなく「意味の類似度」による検索が可能になります。ユーザーが「接続が切れる」と質問しても、「タイムアウトエラーの対処法」というチャンクを正しく取得できるのはこのためです。
+      </p>
+
+      <h3>コサイン類似度</h3>
+
+      <p>
+        ベクトル間の類似度の測定には、主に<strong>コサイン類似度</strong>が使用されます。値の範囲は −1〜1 で、1に近いほど意味が類似しており、0は無相関、−1は正反対の意味を持ちます。ほとんどの実用シナリオでは 0.7〜0.9 の範囲が「十分に関連している」と判断できる閾値になります。この閾値はドメインとデータによって調整が必要です。
+      </p>
+
+      <h3>Vector DB 比較</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>DB</th>
+            <th>タイプ</th>
+            <th>特徴</th>
+            <th>推奨シナリオ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>pgvector</td>
+            <td>PostgreSQL拡張</td>
+            <td>既存PG環境と統合、SQL で操作可能</td>
+            <td>中小規模・既存PostgreSQL環境</td>
+          </tr>
+          <tr>
+            <td>Chroma</td>
+            <td>OSS組込み型</td>
+            <td>軽量・Python native・インストール簡単</td>
+            <td>開発・PoC・ローカル検証</td>
+          </tr>
+          <tr>
+            <td>Pinecone</td>
+            <td>クラウドマネージド</td>
+            <td>スケーラブル・インフラ管理不要</td>
+            <td>大規模・マネージドサービス希望</td>
+          </tr>
+          <tr>
+            <td>Azure AI Search</td>
+            <td>クラウドマネージド</td>
+            <td>Azure統合・ハイブリッド検索対応</td>
+            <td>Azureベースの開発環境</td>
+          </tr>
+          <tr>
+            <td>Amazon OpenSearch</td>
+            <td>クラウドマネージド</td>
+            <td>AWS統合・フルテキスト検索との併用</td>
+            <td>AWSベースの開発環境</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Embeddingの生成とベクトルDBへの格納</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — Embeddingの生成とpgvectorへの格納</span>
+        </div>
+        <pre><code>from openai import OpenAI
+import psycopg2
+import json
+
+client = OpenAI()
+
+def embed_text(text: str) -> list[float]:
+    """テキストをEmbeddingベクトルに変換する"""
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return response.data[0].embedding
+
+def store_chunk(conn, chunk_id: str, content: str, metadata: dict) -> None:
+    """チャンクとそのEmbeddingをpgvectorに格納する"""
+    vector = embed_text(content)
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO document_chunks (id, content, metadata, embedding)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE
+              SET content = EXCLUDED.content,
+                  metadata = EXCLUDED.metadata,
+                  embedding = EXCLUDED.embedding
+            """,
+            (chunk_id, content, json.dumps(metadata), vector)
+        )
+    conn.commit()
+
+def search_similar(conn, query: str, top_k: int = 5) -> list[dict]:
+    """クエリと意味的に近いチャンクを取得する"""
+    query_vector = embed_text(query)
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, content, metadata,
+                   1 - (embedding <=> %s::vector) AS similarity
+            FROM document_chunks
+            ORDER BY embedding <=> %s::vector
+            LIMIT %s
+            """,
+            (query_vector, query_vector, top_k)
+        )
+        rows = cur.fetchall()
+
+    return [
+        {"id": r[0], "content": r[1], "metadata": r[2], "similarity": r[3]}
+        for r in rows
+    ]</code></pre>
+      </div>
+
+      <div class="callout callout--info">
+        <p class="callout__heading">ハイブリッド検索について</p>
+        <p>
+          ベクトル検索（意味類似）とBM25キーワード検索（完全一致・部分一致）を組み合わせた<strong>ハイブリッド検索</strong>は、実務上の精度向上に効果的です。例えば製品型番「XR-2400-JP」のような固有識別子はベクトル検索で拾いにくく、キーワード検索が有効です。一方、「接続が不安定」のような自然言語の質問はベクトル検索が強みを発揮します。Azure AI SearchやAmazon OpenSearchはハイブリッド検索をネイティブサポートしており、RRF（Reciprocal Rank Fusion）などで両方のスコアをマージできます。
+        </p>
+      </div>
+
+      <!-- ============================================================
+           Section 4: チャンキング戦略
+           ============================================================ -->
+      <h2 id="section-4">4. チャンキング戦略</h2>
+
+      <p>
+        RAGの精度を左右する最重要要素の一つが<strong>チャンキング</strong>（文書の分割方法）です。分割が粗すぎるとLLMのコンテキストウィンドウを圧迫し、細かすぎると必要な文脈が欠落して回答精度が下がります。どちらも「良さそうな文書は見つかったのに回答がおかしい」という症状として現れます。
+      </p>
+
+      <h3>チャンキング戦略の比較</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>戦略</th>
+            <th>方法</th>
+            <th>メリット</th>
+            <th>デメリット</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>固定長</td>
+            <td>500文字ごとに機械的に分割</td>
+            <td>実装がシンプル・高速</td>
+            <td>文・段落の途中で切れる場合がある</td>
+          </tr>
+          <tr>
+            <td>文境界</td>
+            <td>句点（。）や改行で分割</td>
+            <td>意味の単位を保持しやすい</td>
+            <td>チャンクサイズが不均一になる</td>
+          </tr>
+          <tr>
+            <td>セマンティック</td>
+            <td>Embeddingの類似度変化点で分割</td>
+            <td>意味のまとまりを高精度で保持</td>
+            <td>計算コストが高く実装が複雑</td>
+          </tr>
+          <tr>
+            <td>Hierarchical</td>
+            <td>セクション→段落→文の階層構造</td>
+            <td>文書の論理構造を保持できる</td>
+            <td>実装と管理が複雑、DB設計が必要</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>日本語文書特有の課題</h3>
+
+      <p>
+        日本語ドキュメントをRAGに組み込む際は、英語ドキュメントにはない以下の課題があります。
+      </p>
+
+      <ul>
+        <li><strong>PDFからの抽出品質</strong> — 日本語PDFはフォント埋め込みや文字コードの問題で文字化けやレイアウト崩れが頻発します。<code>pdfplumber</code>や<code>pymupdf</code>の使い分け、またはAzure Document Intelligenceのような高精度OCRサービスの活用を検討してください</li>
+        <li><strong>縦書き・複雑レイアウト</strong> — 縦書きや2段組のPDFは一般的なテキスト抽出では読み順が崩れます。書類のフォーマットに合った抽出ツールの選定が必要です</li>
+        <li><strong>ルビ・記号</strong> — ルビ（読み仮名）が別テキストとして抽出されたり、全角・半角の混在が検索精度に影響します。前処理での正規化が重要です</li>
+        <li><strong>文節・形態素境界</strong> — 日本語は単語間にスペースがないため、固定長での分割が特に意味単位を壊しやすいです。mecabやSudachiを使った形態素解析での分割も選択肢になります</li>
+      </ul>
+
+      <h3>推奨設定値</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — LangChain RecursiveCharacterTextSplitterの推奨設定</span>
+        </div>
+        <pre><code>from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# 日本語文書向け推奨設定
+# chunk_size: 検索精度とコンテキストのバランスを考慮した400〜600文字
+# chunk_overlap: 前後チャンクの文脈を繋ぐため chunk_size の10〜20%
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=80,
+    separators=[
+        "\n\n",   # 段落区切り（最優先）
+        "\n",     # 行区切り
+        "。",     # 句点
+        "、",     # 読点
+        " ",      # スペース
+        "",       # 文字単位（フォールバック）
+    ],
+    length_function=len,  # 文字数カウント（日本語対応）
+)
+
+# 使用例
+with open("manual.txt", encoding="utf-8") as f:
+    raw_text = f.read()
+
+chunks = splitter.split_text(raw_text)
+
+print(f"総チャンク数: {len(chunks)}")
+print(f"平均チャンクサイズ: {sum(len(c) for c in chunks) / len(chunks):.0f}文字")
+print(f"最大チャンクサイズ: {max(len(c) for c in chunks)}文字")
+print(f"最小チャンクサイズ: {min(len(c) for c in chunks)}文字")</code></pre>
+      </div>
+
+      <p>
+        chunk_size の最適値はドキュメントの性質に依存します。技術仕様書や法令文書では段落単位の 300〜500 文字が精度が高い傾向にあります。Q&Aドキュメントは1つの質問と回答のペアを1チャンクとして扱うとより高精度になります。オーバーラップは隣接チャンクの文脈を保持するために重要で、特に文末・文頭が重要な日本語では効果的です。
+      </p>
+
+      <!-- ============================================================
+           Section 5: RAG品質評価
+           ============================================================ -->
+      <h2 id="section-5">5. RAG品質評価</h2>
+
+      <p>
+        RAGパイプラインを構築して「動いた」だけでは不十分です。実運用前には定量的な品質評価が必要であり、<strong>RAGAS（RAG Assessment）</strong>はそのための標準的なフレームワークです。
+      </p>
+
+      <h3>RAGASの4指標</h3>
+
+      <p>
+        RAGASは以下の4つの観点でRAGパイプラインを評価します。
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>定義</th>
+            <th>測定対象</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Faithfulness（忠実性）</td>
+            <td>回答が取得したコンテキストに基づいているか</td>
+            <td>幻覚の有無（0〜1）</td>
+          </tr>
+          <tr>
+            <td>Answer Relevancy（回答関連性）</td>
+            <td>回答がユーザーの質問に対して適切か</td>
+            <td>回答の的確さ（0〜1）</td>
+          </tr>
+          <tr>
+            <td>Context Precision（文脈精度）</td>
+            <td>取得したコンテキストのうち関連情報の割合</td>
+            <td>検索結果のノイズ（0〜1）</td>
+          </tr>
+          <tr>
+            <td>Context Recall（文脈再現率）</td>
+            <td>回答に必要な情報が取得できているか</td>
+            <td>検索の網羅性（0〜1）</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        実用的な品質基準として、Faithfulness ≥ 0.85、Answer Relevancy ≥ 0.80 を目安にするチームが多いです。Context PrecisionとRecallはトレードオフの関係にあり、top_k（取得チャンク数）の調整でバランスをとります。
+      </p>
+
+      <h3>RAGASによる評価実装</h3>
+
+      <div class="code-block">
+        <div class="code-block__header">
+          <span class="code-block__lang">python — RAGASを使ったパイプライン評価</span>
+        </div>
+        <pre><code>from datasets import Dataset
+from ragas import evaluate
+from ragas.metrics import (
+    faithfulness,
+    answer_relevancy,
+    context_precision,
+    context_recall,
+)
+
+# 評価用データセット
+# 各サンプルは question, answer, contexts, ground_truth を持つ
+eval_data = {
+    "question": [
+        "有給休暇の申請期限はいつですか？",
+        "テレワーク勤務の上限日数は？",
+    ],
+    "answer": [
+        # RAGパイプラインが生成した回答（実際には pipeline.run(q) で取得）
+        "有給休暇は取得日の3営業日前までに申請が必要です。",
+        "テレワーク勤務は月15日を上限としています。",
+    ],
+    "contexts": [
+        # 検索で取得されたチャンクリスト
+        ["就業規則第12条：有給休暇の申請は取得希望日の3営業日前までに...", ],
+        ["テレワーク勤務規程第5条：在宅勤務の上限は月15日とする...", ],
+    ],
+    "ground_truth": [
+        # 期待される正解（人手で用意するゴールドスタンダード）
+        "有給休暇は取得日の3営業日前までに申請が必要です。",
+        "テレワーク勤務は月15日を上限としています。",
+    ],
+}
+
+dataset = Dataset.from_dict(eval_data)
+
+# 評価実行
+results = evaluate(
+    dataset=dataset,
+    metrics=[
+        faithfulness,
+        answer_relevancy,
+        context_precision,
+        context_recall,
+    ],
+    llm=...,          # 評価用LLM (OpenAI GPT-4o 等)
+    embeddings=...,   # 評価用Embedding Model
+)
+
+print(results)
+# 出力例:
+# {'faithfulness': 0.92, 'answer_relevancy': 0.87,
+#  'context_precision': 0.78, 'context_recall': 0.83}</code></pre>
+      </div>
+
+      <div class="callout callout--warning">
+        <p class="callout__heading">納品前のQAチェックリスト</p>
+        <ul>
+          <li>[ ] <strong>幻覚率（Faithfulness）</strong>が 0.85 以上であることを確認</li>
+          <li>[ ] <strong>検索精度（Context Precision）</strong>が 0.75 以上であることを確認</li>
+          <li>[ ] <strong>回答網羅性（Context Recall）</strong>が 0.80 以上であることを確認</li>
+          <li>[ ] テストセットに「DBに存在しない質問」（アウトオブドメイン）を含め、適切に「情報がありません」と返すか検証</li>
+          <li>[ ] 個人情報・機密情報を含む文書が意図せず返答に漏洩しないか確認</li>
+          <li>[ ] レイテンシが実用範囲内（P95 &lt; 3秒程度）であることを測定</li>
+          <li>[ ] チャンクが正しく分割されているか（意味の途中で切れていないか）を人手でサンプリング確認</li>
+        </ul>
+      </div>
+
+      <h3>継続的改善のサイクル</h3>
+
+      <p>
+        RAGの品質は初期構築で完結するものではありません。本番運用後は以下のサイクルで継続的に改善します。
+      </p>
+
+      <ol>
+        <li><strong>ログ収集</strong> — 質問・取得チャンク・回答・ユーザーフィードバックを記録する</li>
+        <li><strong>低スコア事例の分析</strong> — Faithfulnessが低い回答や「情報が見つかりません」の頻度を分析し、原因（チャンキング不良、Embedding精度、クエリ処理）を特定する</li>
+        <li><strong>改善策の実施</strong> — チャンクサイズ調整、クエリ拡張（LLMでクエリを言い換えて複数回検索）、リランカーの追加など</li>
+        <li><strong>評価セットでの検証</strong> — 変更後にRAGASで回帰テストを実施し、スコアが改善していることを確認</li>
+        <li><strong>本番反映 &amp; 監視</strong> — A/Bテストで段階的にロールアウトし、本番スコアをモニタリングする</li>
+      </ol>
+
+      <!-- Summary Box -->
+      <div class="article-summary">
+        <p class="article-summary__heading">この記事のまとめ</p>
+        <ol class="article-summary__list">
+          <li>RAGはLLMの<strong>知識カットオフと幻覚</strong>という2つの構造的限界を、回答時に関連文書を動的に注入することで解決します。知識の更新頻度が高い場合はファインチューニングよりRAGが適切です</li>
+          <li>RAGは<strong>インデキシングパイプライン</strong>（文書→チャンキング→Embedding→ベクトルDB）と<strong>クエリパイプライン</strong>（質問→類似検索→コンテキスト挿入→LLM）の2構成です</li>
+          <li>Vector DBの選定はスケール・既存インフラ・マネージド要件で決める。中小規模の既存PostgreSQL環境にはpgvector、開発・PoC段階にはChromaが最初の選択肢として実用的です</li>
+          <li><strong>チャンキングはRAG品質の最重要要素</strong>の一つ。日本語文書では RecursiveCharacterTextSplitter の separators に句点・読点を含め、chunk_size 500文字・overlap 80文字が現実的な出発点です</li>
+          <li>納品前に<strong>RAGAS</strong>でFaithfulness・Answer Relevancy・Context Precision・Context Recallの4指標を定量評価し、継続的な改善サイクルを構築することが本番運用の鍵です</li>
+        </ol>
+      </div>
+
+    </article>
+
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="02-prompt-engineering.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">プロンプトエンジニアリング実践ガイド</span>
+      </a>
+      <a href="04-ai-agents.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">AIエージェント設計パターン</span>
+      </a>
+    </nav>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

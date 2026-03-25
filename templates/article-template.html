@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ARTICLE_TITLE}} — GenAI Engineering</title>
+  <meta name="description" content="{{ARTICLE_SUBTITLE}}">
+  <meta property="og:title" content="{{ARTICLE_TITLE}} — GenAI Engineering">
+  <meta property="og:description" content="{{ARTICLE_SUBTITLE}}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/{{ARTICLE_SLUG}}.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/{{ARTICLE_SLUG}}.html">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/article.css">
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
+
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
+    </div>
+  </div>
+</header>
+
+<!-- Article Layout -->
+<div class="layout-article">
+
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <!-- TOC items filled per article -->
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>{{ARTICLE_TITLE}}</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">{{ARTICLE_NUMBER}}</p>
+      <h1 class="article-header__title">{{ARTICLE_TITLE}}</h1>
+      <p class="article-header__subtitle">{{ARTICLE_SUBTITLE}}</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">{{READING_TIME}} min read</span>
+        <span class="article-header__meta-item">{{PUBLISHED_DATE}}</span>
+        {{TAGS}}
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <article class="article-body">
+      <!-- Article content goes here -->
+    </article>
+
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="{{PREV_URL}}" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">{{PREV_TITLE}}</span>
+      </a>
+      <a href="{{NEXT_URL}}" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">{{NEXT_TITLE}}</span>
+      </a>
+    </nav>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/reading-progress.js"></script>
+</body>
+</html>

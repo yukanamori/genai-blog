@@ -1,0 +1,229 @@
+/* =============================================================
+   ARTICLE.CSS — Article Body Prose Styles
+   ============================================================= */
+
+.article-body {
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  line-height: 1.9;
+}
+
+/* ── Headings within article ── */
+.article-body h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: var(--sp-16);
+  margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--color-border);
+  scroll-margin-top: 72px;
+}
+
+.article-body h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: var(--sp-10);
+  margin-bottom: var(--sp-4);
+  scroll-margin-top: 72px;
+}
+
+.article-body h3::before {
+  content: '// ';
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.article-body h4 {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: var(--sp-8);
+  margin-bottom: var(--sp-3);
+  scroll-margin-top: 72px;
+}
+
+/* ── Paragraphs ── */
+.article-body p {
+  margin-bottom: var(--sp-5);
+}
+
+.article-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Lead paragraph ── */
+.article-body .lead {
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  line-height: 1.75;
+  margin-bottom: var(--sp-8);
+}
+
+/* ── Lists in article body ── */
+.article-body ul,
+.article-body ol {
+  margin: var(--sp-5) 0;
+  padding-left: var(--sp-6);
+}
+
+.article-body ul {
+  list-style: none;
+}
+
+.article-body ul li {
+  position: relative;
+  padding-left: var(--sp-4);
+  margin-bottom: var(--sp-2);
+  line-height: 1.7;
+}
+
+.article-body ul li::before {
+  content: '─';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+}
+
+.article-body ol {
+  list-style: decimal;
+  counter-reset: ol-counter;
+}
+
+.article-body ol li {
+  margin-bottom: var(--sp-2);
+  padding-left: var(--sp-2);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+.article-body ol li::marker {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+/* ── Nested lists ── */
+.article-body ul ul,
+.article-body ol ol {
+  margin: var(--sp-2) 0;
+}
+
+.article-body ul ul li::before {
+  content: '·';
+}
+
+/* ── Blockquote ── */
+.article-body blockquote {
+  border-left: 3px solid var(--color-border-sharp);
+  padding: var(--sp-4) var(--sp-6);
+  margin: var(--sp-8) 0;
+  background: var(--color-surface);
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.article-body blockquote p {
+  margin: 0;
+}
+
+/* ── Strong / Em ── */
+.article-body strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.article-body em {
+  color: var(--color-text);
+  font-style: italic;
+}
+
+/* ── Horizontal rule ── */
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--sp-12) 0;
+}
+
+/* ── Section intro (after h2) ── */
+.article-body h2 + p {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  line-height: 1.75;
+}
+
+/* ── Summary box at article end ── */
+.article-summary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-accent);
+  padding: var(--sp-8);
+  margin-top: var(--sp-12);
+}
+
+.article-summary__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-5);
+}
+
+.article-summary__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.article-summary__items li {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  padding-left: var(--sp-5);
+  position: relative;
+  line-height: 1.6;
+}
+
+.article-summary__items li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+}
+
+/* ── Code block override (wider) ── */
+.article-body .code-block {
+  max-width: var(--max-code);
+}
+
+/* ── Table in article ── */
+.article-body .table-wrap {
+  margin: var(--sp-8) 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .article-body h2 {
+    font-size: var(--text-xl);
+    margin-top: var(--sp-10);
+  }
+
+  .article-body h3 {
+    font-size: var(--text-lg);
+  }
+
+  .article-body .lead {
+    font-size: var(--text-base);
+  }
+}
