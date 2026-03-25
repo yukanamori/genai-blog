@@ -7,7 +7,7 @@
     "tags": ["LLM", "Transformer", "基礎理論", "アーキテクチャ"],
     "readingTime": 14,
     "publishedAt": "2026-03-25",
-    "path": "/articles/01-llm-transformer-basics.html"
+    "path": "articles/01-llm-transformer-basics.html"
   },
   {
     "id": "02",
@@ -17,7 +17,7 @@
     "tags": ["プロンプト", "実践", "Chain-of-Thought", "Few-shot"],
     "readingTime": 12,
     "publishedAt": "2026-03-25",
-    "path": "/articles/02-prompt-engineering.html"
+    "path": "articles/02-prompt-engineering.html"
   },
   {
     "id": "03",
@@ -27,7 +27,7 @@
     "tags": ["RAG", "ベクトルDB", "Embedding", "検索"],
     "readingTime": 16,
     "publishedAt": "2026-03-25",
-    "path": "/articles/03-rag.html"
+    "path": "articles/03-rag.html"
   },
   {
     "id": "04",
@@ -37,7 +37,7 @@
     "tags": ["エージェント", "Tool Use", "ReAct", "マルチエージェント"],
     "readingTime": 14,
     "publishedAt": "2026-03-25",
-    "path": "/articles/04-ai-agents.html"
+    "path": "articles/04-ai-agents.html"
   },
   {
     "id": "05",
@@ -47,7 +47,7 @@
     "tags": ["コード生成", "GitHub Copilot", "Claude Code", "レビュー"],
     "readingTime": 13,
     "publishedAt": "2026-03-25",
-    "path": "/articles/05-code-generation-review.html"
+    "path": "articles/05-code-generation-review.html"
   },
   {
     "id": "06",
@@ -57,7 +57,7 @@
     "tags": ["SDLC", "要件定義", "テスト", "ドキュメント生成"],
     "readingTime": 15,
     "publishedAt": "2026-03-25",
-    "path": "/articles/06-ai-sdlc.html"
+    "path": "articles/06-ai-sdlc.html"
   },
   {
     "id": "07",
@@ -67,7 +67,7 @@
     "tags": ["セキュリティ", "ガバナンス", "AI Act", "リスク管理"],
     "readingTime": 13,
     "publishedAt": "2026-03-25",
-    "path": "/articles/07-security-compliance-governance.html"
+    "path": "articles/07-security-compliance-governance.html"
   },
   {
     "id": "08",
@@ -77,6 +77,6 @@
     "tags": ["導入計画", "組織変革", "ロードマップ", "ROI"],
     "readingTime": 8,
     "publishedAt": "2026-03-25",
-    "path": "/articles/08-ai-adoption-roadmap.html"
+    "path": "articles/08-ai-adoption-roadmap.html"
   }
 ]

@@ -10,7 +10,7 @@
 
   let articles = [];
 
-  fetch('/_data/articles.json')
+  fetch('_data/articles.json')
     .then(r => r.json())
     .then(data => { articles = data; })
     .catch(() => {});
