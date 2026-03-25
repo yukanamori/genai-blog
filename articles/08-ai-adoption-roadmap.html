@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>チーム・組織へのAI導入ロードマップ | GENAI.ENG</title>
+  <title>チーム・組織へのAI導入ロードマップ — GenAI Engineering</title>
   <meta name="description" content="「やってみた」で終わらせないためのAI導入計画と実行。成熟度モデル、12ヶ月ロードマップ、スキル習得の優先順位、ROI試算、今日から始める5つのアクションを実践的に解説。">
-  <meta property="og:title" content="チーム・組織へのAI導入ロードマップ | GENAI.ENG">
+  <meta property="og:title" content="チーム・組織へのAI導入ロードマップ — GenAI Engineering">
   <meta property="og:description" content="「やってみた」で終わらせないためのAI導入計画と実行。成熟度モデル、12ヶ月ロードマップ、スキル習得の優先順位、ROI試算、今日から始める5つのアクションを実践的に解説。">
-  <meta property="og:url" content="https://genai-eng.dev/articles/08-ai-adoption-roadmap.html">
   <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/08-ai-adoption-roadmap.html">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/08-ai-adoption-roadmap.html">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/layout.css">
   <link rel="stylesheet" href="../assets/css/components.css">
@@ -18,66 +19,62 @@
 </head>
 <body>
 
-  <!-- Reading Progress Bar -->
-  <div class="reading-progress" id="readingProgress"></div>
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
 
-  <!-- Site Header -->
-  <header class="site-header">
-    <div class="site-header__inner">
-      <a href="../index.html" class="site-logo">[<span>GEN</span>AI.ENG]</a>
-      <nav class="site-header__nav">
-        <a href="../index.html" class="site-header__back">← ALL ARTICLES</a>
-      </nav>
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="../index.html" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Layout Wrapper -->
-  <div class="layout-wrapper">
+<!-- Article Layout -->
+<div class="layout-article">
 
-    <!-- TOC Sidebar -->
-    <aside class="toc-sidebar" id="tocSidebar">
-      <div class="toc-sidebar__inner">
-        <p class="toc-sidebar__label">目次</p>
-        <nav class="toc-nav">
-          <ol class="toc-list">
-            <li class="toc-list__item"><a href="#section-1" class="toc-link">AI活用成熟度モデル</a></li>
-            <li class="toc-list__item"><a href="#section-2" class="toc-link">12ヶ月ロードマップ</a></li>
-            <li class="toc-list__item"><a href="#section-3" class="toc-link">スキル習得の優先順位</a></li>
-            <li class="toc-list__item"><a href="#section-4" class="toc-link">ROI試算の考え方</a></li>
-            <li class="toc-list__item"><a href="#section-5" class="toc-link">今日から始める5つのアクション</a></li>
-          </ol>
-        </nav>
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">AI活用成熟度モデル</a></li>
+      <li><a href="#section-2">12ヶ月ロードマップ</a></li>
+      <li><a href="#section-3">スキル習得の優先順位</a></li>
+      <li><a href="#section-4">ROI試算の考え方</a></li>
+      <li><a href="#section-5">今日から始める5つのアクション</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>チーム・組織へのAI導入ロードマップ</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">08</p>
+      <h1 class="article-header__title">チーム・組織へのAI導入ロードマップ</h1>
+      <p class="article-header__subtitle">「やってみた」で終わらせないための計画と実行</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">8 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">導入計画</span>
+        <span class="article-header__meta-item tag">組織変革</span>
+        <span class="article-header__meta-item tag">ロードマップ</span>
+        <span class="article-header__meta-item tag">ROI</span>
       </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" aria-label="パンくずリスト">
-        <ol class="breadcrumb__list">
-          <li class="breadcrumb__item"><a href="../index.html" class="breadcrumb__link">GENAI.ENG</a></li>
-          <li class="breadcrumb__item breadcrumb__item--current">チーム・組織へのAI導入ロードマップ</li>
-        </ol>
-      </nav>
-
-      <!-- Article Header -->
-      <header class="article-header">
-        <div class="article-header__meta">
-          <span class="article-number">08</span>
-          <span class="article-card__badge" style="display:inline-block; background: #FF3D00; color: #0D0D0D; font-family: monospace; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 3px; vertical-align: middle; margin-left: 4px;">REFERENCE</span>
-          <span class="article-tag">導入計画</span>
-          <span class="article-tag">組織変革</span>
-          <span class="article-tag">ロードマップ</span>
-          <span class="article-tag">ROI</span>
-        </div>
-        <h1 class="article-header__title">チーム・組織へのAI導入ロードマップ</h1>
-        <p class="article-header__subtitle">「やってみた」で終わらせないための計画と実行</p>
-        <div class="article-header__info">
-          <span class="reading-time">8 min read</span>
-          <span class="publish-date">2026-03-25</span>
-        </div>
-      </header>
+    </header>
 
       <!-- Article Body -->
       <article class="article-body">
@@ -467,27 +464,31 @@
 
       </article>
 
-      <!-- Article Navigation -->
-      <nav class="article-nav" aria-label="前後の記事">
-        <a href="07-security-compliance-governance.html" class="article-nav__link article-nav__link--prev">
-          <span class="article-nav__label">← PREV</span>
-          <span class="article-nav__title">セキュリティ・コンプライアンス・ガバナンス</span>
-        </a>
-        <a href="../index.html" class="article-nav__link article-nav__link--next">
-          <span class="article-nav__label">NEXT →</span>
-          <span class="article-nav__title">記事一覧へ戻る</span>
-        </a>
-      </nav>
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="07-security-compliance-governance.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">セキュリティ・コンプライアンス・ガバナンス</span>
+      </a>
+      <a href="../index.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">記事一覧へ戻る</span>
+      </a>
+    </nav>
 
-    </main>
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
   </div>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <p class="site-footer__copy">&copy; 2026 Kanamori Yu</p>
-    </div>
-  </footer>
+</footer>
 
   <script src="../assets/js/nav.js"></script>
   <script src="../assets/js/animations.js"></script>
