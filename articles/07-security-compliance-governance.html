@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>セキュリティ・コンプライアンス・ガバナンス | GENAI.ENG</title>
+  <title>セキュリティ・コンプライアンス・ガバナンス — GenAI Engineering</title>
   <meta name="description" content="AIリスクを正しく理解し、組織として管理する。データ漏洩、ハルシネーション、プロンプトインジェクションなどのリスク分類から、クラウドサービス別データポリシー、社内ガバナンス体制、法規制対応まで体系的に解説。">
-  <meta property="og:title" content="セキュリティ・コンプライアンス・ガバナンス | GENAI.ENG">
+  <meta property="og:title" content="セキュリティ・コンプライアンス・ガバナンス — GenAI Engineering">
   <meta property="og:description" content="AIリスクを正しく理解し、組織として管理する。データ漏洩、ハルシネーション、プロンプトインジェクションなどのリスク分類から、クラウドサービス別データポリシー、社内ガバナンス体制、法規制対応まで体系的に解説。">
-  <meta property="og:url" content="https://genai-eng.dev/articles/07-security-compliance-governance.html">
   <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yukanamori.github.io/genai-blog/articles/07-security-compliance-governance.html">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://yukanamori.github.io/genai-blog/articles/07-security-compliance-governance.html">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/layout.css">
   <link rel="stylesheet" href="../assets/css/components.css">
@@ -18,65 +19,62 @@
 </head>
 <body>
 
-  <!-- Reading Progress Bar -->
-  <div class="reading-progress" id="readingProgress"></div>
+<!-- Reading Progress -->
+<div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <div class="reading-progress__fill"></div>
+</div>
 
-  <!-- Site Header -->
-  <header class="site-header">
-    <div class="site-header__inner">
-      <a href="../index.html" class="site-logo">[<span>GEN</span>AI.ENG]</a>
-      <nav class="site-header__nav">
-        <a href="../index.html" class="site-header__back">← ALL ARTICLES</a>
-      </nav>
+<!-- Site Header -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+    <a href="../index.html" class="site-header__logo" aria-label="GenAI Engineering トップ">
+      [<span>GEN</span>AI.ENG]
+    </a>
+    <div class="site-header__meta">
+      <a href="../index.html">← ALL ARTICLES</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Layout Wrapper -->
-  <div class="layout-wrapper">
+<!-- Article Layout -->
+<div class="layout-article">
 
-    <!-- TOC Sidebar -->
-    <aside class="toc-sidebar" id="tocSidebar">
-      <div class="toc-sidebar__inner">
-        <p class="toc-sidebar__label">目次</p>
-        <nav class="toc-nav">
-          <ol class="toc-list">
-            <li class="toc-list__item"><a href="#section-1" class="toc-link">生成AIのリスク分類</a></li>
-            <li class="toc-list__item"><a href="#section-2" class="toc-link">クラウドサービス別データ取り扱い</a></li>
-            <li class="toc-list__item"><a href="#section-3" class="toc-link">社内ガバナンス体制の構築</a></li>
-            <li class="toc-list__item"><a href="#section-4" class="toc-link">法規制と標準への対応</a></li>
-            <li class="toc-list__item"><a href="#section-5" class="toc-link">顧客・ステークホルダーへの説明責任</a></li>
-          </ol>
-        </nav>
+  <!-- TOC Sidebar -->
+  <aside class="article-toc" aria-label="目次">
+    <p class="article-toc__label">目次</p>
+    <ol class="article-toc__list">
+      <li><a href="#section-1">生成AIのリスク分類</a></li>
+      <li><a href="#section-2">クラウドサービス別データ取り扱い</a></li>
+      <li><a href="#section-3">社内ガバナンス体制の構築</a></li>
+      <li><a href="#section-4">法規制と標準への対応</a></li>
+      <li><a href="#section-5">顧客・ステークホルダーへの説明責任</a></li>
+    </ol>
+  </aside>
+
+  <!-- Article Main -->
+  <main class="article-main">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="../index.html">GenAI.ENG</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>セキュリティ・コンプライアンス・ガバナンス</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <p class="article-header__number">07</p>
+      <h1 class="article-header__title">セキュリティ・コンプライアンス・ガバナンス</h1>
+      <p class="article-header__subtitle">AIリスクを正しく理解し、組織として管理する</p>
+      <div class="article-header__meta">
+        <span class="article-header__meta-item">13 min read</span>
+        <span class="article-header__meta-item">2026-03-25</span>
+        <span class="article-header__meta-item tag">セキュリティ</span>
+        <span class="article-header__meta-item tag">ガバナンス</span>
+        <span class="article-header__meta-item tag">AI Act</span>
+        <span class="article-header__meta-item tag">リスク管理</span>
       </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" aria-label="パンくずリスト">
-        <ol class="breadcrumb__list">
-          <li class="breadcrumb__item"><a href="../index.html" class="breadcrumb__link">GENAI.ENG</a></li>
-          <li class="breadcrumb__item breadcrumb__item--current">セキュリティ・コンプライアンス・ガバナンス</li>
-        </ol>
-      </nav>
-
-      <!-- Article Header -->
-      <header class="article-header">
-        <div class="article-header__meta">
-          <span class="article-number">07</span>
-          <span class="article-tag">セキュリティ</span>
-          <span class="article-tag">ガバナンス</span>
-          <span class="article-tag">AI Act</span>
-          <span class="article-tag">リスク管理</span>
-        </div>
-        <h1 class="article-header__title">セキュリティ・コンプライアンス・ガバナンス</h1>
-        <p class="article-header__subtitle">AIリスクを正しく理解し、組織として管理する</p>
-        <div class="article-header__info">
-          <span class="reading-time">13 min read</span>
-          <span class="publish-date">2026-03-25</span>
-        </div>
-      </header>
+    </header>
 
       <!-- Article Body -->
       <article class="article-body">
@@ -606,27 +604,31 @@ prompt = f"以下のコードをレビューしてください:\n{mask_pii(sourc
 
       </article>
 
-      <!-- Article Navigation -->
-      <nav class="article-nav" aria-label="前後の記事">
-        <a href="06-ai-sdlc.html" class="article-nav__link article-nav__link--prev">
-          <span class="article-nav__label">← PREV</span>
-          <span class="article-nav__title">AIとソフトウェア開発ライフサイクル</span>
-        </a>
-        <a href="08-ai-adoption-roadmap.html" class="article-nav__link article-nav__link--next">
-          <span class="article-nav__label">NEXT →</span>
-          <span class="article-nav__title">チーム・組織へのAI導入ロードマップ</span>
-        </a>
-      </nav>
+    <!-- Article Navigation -->
+    <nav class="article-nav" aria-label="前後の記事">
+      <a href="06-ai-sdlc.html" class="article-nav__item article-nav__item--prev">
+        <span class="article-nav__label">← PREV</span>
+        <span class="article-nav__title">AIとソフトウェア開発ライフサイクル</span>
+      </a>
+      <a href="08-ai-adoption-roadmap.html" class="article-nav__item article-nav__item--next">
+        <span class="article-nav__label">NEXT →</span>
+        <span class="article-nav__title">チーム・組織へのAI導入ロードマップ</span>
+      </a>
+    </nav>
 
-    </main>
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <p class="site-footer__copy">© 2026 <span>Kanamori Yu</span></p>
+    <nav class="site-footer__links">
+      <a href="https://github.com/yukanamori/genai-blog" target="_blank" rel="noopener">GitHub</a>
+    </nav>
   </div>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <p class="site-footer__copy">&copy; 2026 Kanamori Yu</p>
-    </div>
-  </footer>
+</footer>
 
   <script src="../assets/js/nav.js"></script>
   <script src="../assets/js/animations.js"></script>
