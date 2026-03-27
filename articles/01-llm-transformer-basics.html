@@ -239,6 +239,11 @@ t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
       <!-- Attention SVG Diagram -->
       <div class="diagram">
         <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="アテンション可視化：猫が魚を食べた">
+          <defs>
+            <marker id="attn-arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+          </defs>
           <!-- Background -->
           <rect width="600" height="200" fill="#0D0D0D"/>
 
@@ -260,20 +265,14 @@ t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
           <text x="500" y="131" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#888884">[EOS]</text>
 
           <!-- Attention arcs -->
-          <!-- 食べた → 猫が (high) -->
-          <path d="M 350,110 Q 210,40 70,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
-          <!-- 食べた → 魚を (high) -->
-          <path d="M 350,110 Q 280,60 205,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
+          <!-- 食べた → 猫が (high, with auto-oriented arrowhead) -->
+          <path d="M 350,110 Q 210,40 70,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9" marker-end="url(#attn-arr)"/>
+          <!-- 食べた → 魚を (high, with auto-oriented arrowhead) -->
+          <path d="M 350,110 Q 280,60 205,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9" marker-end="url(#attn-arr)"/>
           <!-- 猫が → 魚を (mid) -->
           <path d="M 70,110 Q 138,70 205,110" fill="none" stroke="#FF3D00" stroke-width="1.2" opacity="0.45"/>
           <!-- 魚を → EOS (low) -->
           <path d="M 205,110 Q 352,80 500,110" fill="none" stroke="#888884" stroke-width="0.8" opacity="0.3"/>
-
-          <!-- Arrowheads on high-attention lines -->
-          <!-- at 猫が end -->
-          <polygon points="70,110 63,100 78,100" fill="#FF3D00" opacity="0.9"/>
-          <!-- at 魚を end (from 食べた) -->
-          <polygon points="205,110 198,100 213,100" fill="#FF3D00" opacity="0.9"/>
 
           <!-- Legend -->
           <line x1="40" y1="175" x2="70" y2="175" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
