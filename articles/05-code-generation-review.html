@@ -92,18 +92,76 @@
         2024〜2025年にかけて、AIコーディングツールは群雄割拠の状態から主要プレーヤーが確立されつつある段階に移行しました。それぞれのツールは異なるアーキテクチャとセキュリティモデルを持ち、組織の要件によって最適解が異なります。
       </p>
 
-      <!-- Image Placeholder -->
-      <figure>
-        <div class="img-placeholder">
-          <!-- IMAGE GENERATION PROMPT (Midjourney / DALL-E):
-               Dark terminal-style comparison chart, orange accent highlights, monospace typography,
-               brutalist design aesthetic. Five rows of AI coding tool logos/names on a pure dark
-               (#0D0D0D) background, with orange (#FF3D00) accent bars indicating relative feature
-               coverage. Grid lines in muted gray (#888884). High contrast, no gradients, 16:9.
-          -->
-        </div>
+      <div class="diagram">
+        <svg viewBox="0 0 760 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="主要AIコーディングツール比較表：GitHub Copilot, Cursor, Claude Code, Amazon Q, Gemini Code Assist">
+          <rect width="760" height="220" fill="#0D0D0D"/>
+
+          <!-- Column headers -->
+          <text x="14"  y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">ツール</text>
+          <text x="200" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">形態</text>
+          <text x="320" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">コード補完</text>
+          <text x="420" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">チャット</text>
+          <text x="510" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">自律実行</text>
+          <text x="610" y="24" font-family="monospace" font-size="10" font-weight="bold" fill="#FF3D00">セキュリティ</text>
+
+          <!-- Divider line -->
+          <line x1="10" y1="30" x2="750" y2="30" stroke="#2A2A2A" stroke-width="1"/>
+
+          <!-- Row 1: GitHub Copilot -->
+          <rect x="10" y="36" width="740" height="30" rx="2" fill="#141414"/>
+          <text x="14"  y="56" font-family="monospace" font-size="11" font-weight="bold" fill="#E8E8E2">GitHub Copilot</text>
+          <text x="200" y="56" font-family="monospace" font-size="10" fill="#888884">IDE拡張</text>
+          <rect x="320" y="41" width="68" height="12" rx="2" fill="#FF3D00" opacity="0.8"/>
+          <rect x="420" y="41" width="46" height="12" rx="2" fill="#FF3D00" opacity="0.5"/>
+          <rect x="510" y="41" width="22" height="12" rx="2" fill="#2A2A2A"/>
+          <text x="610" y="56" font-family="monospace" font-size="9" fill="#888884">Enterprise版で非学習</text>
+
+          <!-- Row 2: Cursor -->
+          <rect x="10" y="68" width="740" height="30" rx="2" fill="#0D0D0D"/>
+          <text x="14"  y="88" font-family="monospace" font-size="11" font-weight="bold" fill="#E8E8E2">Cursor</text>
+          <text x="200" y="88" font-family="monospace" font-size="10" fill="#888884">AI-first IDE</text>
+          <rect x="320" y="73" width="68" height="12" rx="2" fill="#FF3D00" opacity="0.8"/>
+          <rect x="420" y="73" width="68" height="12" rx="2" fill="#FF3D00" opacity="0.8"/>
+          <rect x="510" y="73" width="46" height="12" rx="2" fill="#FF3D00" opacity="0.5"/>
+          <text x="610" y="88" font-family="monospace" font-size="9" fill="#888884">Privacy Mode</text>
+
+          <!-- Row 3: Claude Code (highlighted) -->
+          <rect x="10" y="100" width="740" height="30" rx="2" fill="#1A1A1A" stroke="#FF3D00" stroke-width="0.5"/>
+          <text x="14"  y="120" font-family="monospace" font-size="11" font-weight="bold" fill="#FF3D00">Claude Code</text>
+          <text x="200" y="120" font-family="monospace" font-size="10" fill="#FF3D00">CLI / エージェント</text>
+          <rect x="320" y="105" width="68" height="12" rx="2" fill="#FF3D00"/>
+          <rect x="420" y="105" width="68" height="12" rx="2" fill="#FF3D00"/>
+          <rect x="510" y="105" width="68" height="12" rx="2" fill="#FF3D00"/>
+          <text x="610" y="120" font-family="monospace" font-size="9" fill="#FF3D00">APIキー / データ非学習</text>
+
+          <!-- Row 4: Amazon Q Developer -->
+          <rect x="10" y="132" width="740" height="30" rx="2" fill="#0D0D0D"/>
+          <text x="14"  y="152" font-family="monospace" font-size="11" font-weight="bold" fill="#E8E8E2">Amazon Q Developer</text>
+          <text x="200" y="152" font-family="monospace" font-size="10" fill="#888884">IDE拡張</text>
+          <rect x="320" y="137" width="68" height="12" rx="2" fill="#FF3D00" opacity="0.8"/>
+          <rect x="420" y="137" width="46" height="12" rx="2" fill="#FF3D00" opacity="0.5"/>
+          <rect x="510" y="137" width="22" height="12" rx="2" fill="#2A2A2A"/>
+          <text x="610" y="152" font-family="monospace" font-size="9" fill="#888884">VPCエンドポイント対応</text>
+
+          <!-- Row 5: Gemini Code Assist -->
+          <rect x="10" y="164" width="740" height="30" rx="2" fill="#141414"/>
+          <text x="14"  y="184" font-family="monospace" font-size="11" font-weight="bold" fill="#E8E8E2">Gemini Code Assist</text>
+          <text x="200" y="184" font-family="monospace" font-size="10" fill="#888884">IDE拡張</text>
+          <rect x="320" y="169" width="68" height="12" rx="2" fill="#FF3D00" opacity="0.8"/>
+          <rect x="420" y="169" width="46" height="12" rx="2" fill="#FF3D00" opacity="0.5"/>
+          <rect x="510" y="169" width="22" height="12" rx="2" fill="#2A2A2A"/>
+          <text x="610" y="184" font-family="monospace" font-size="9" fill="#888884">Enterprise版で保護</text>
+
+          <!-- Legend -->
+          <rect x="320" y="203" width="68" height="8" rx="1" fill="#FF3D00"/>
+          <text x="394" y="211" font-family="monospace" font-size="8" fill="#888884">高</text>
+          <rect x="412" y="203" width="46" height="8" rx="1" fill="#FF3D00" opacity="0.5"/>
+          <text x="464" y="211" font-family="monospace" font-size="8" fill="#888884">中</text>
+          <rect x="482" y="203" width="22" height="8" rx="1" fill="#2A2A2A"/>
+          <text x="510" y="211" font-family="monospace" font-size="8" fill="#888884">低/なし</text>
+        </svg>
         <figcaption>図1: 主要AIコーディングツール比較 — 形態・特徴・セキュリティ対応の全体像</figcaption>
-      </figure>
+      </div>
 
       <table>
         <thead>

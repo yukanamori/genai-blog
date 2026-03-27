@@ -109,18 +109,18 @@
           <text x="170" y="46" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#888884">チャットbot</text>
 
           <!-- Single-turn flow -->
-          <rect x="40" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
-          <text x="80" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">入力</text>
+          <rect x="35" y="60" width="72" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="71" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">入力</text>
 
-          <line x1="120" y1="76" x2="156" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
+          <line x1="107" y1="76" x2="133" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
 
-          <rect x="158" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
-          <text x="198" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">LLM</text>
+          <rect x="135" y="60" width="72" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="171" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">LLM</text>
 
-          <line x1="238" y1="76" x2="274" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
+          <line x1="207" y1="76" x2="233" y2="76" stroke="#888884" stroke-width="1.5" marker-end="url(#arr-cmp2)"/>
 
-          <rect x="276" y="60" width="80" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
-          <text x="316" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">出力</text>
+          <rect x="235" y="60" width="72" height="32" rx="4" fill="#2A2A2A" stroke="#888884" stroke-width="1"/>
+          <text x="271" y="80" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">出力</text>
 
           <text x="170" y="125" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">1回で完結する問答</text>
           <text x="170" y="145" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">ツール・外部システムなし</text>
@@ -434,6 +434,14 @@ print(answer)</code></pre>
           <rect x="150" y="295" width="300" height="40" rx="4" fill="#1A1A1A" stroke="#888884" stroke-width="1" stroke-dasharray="4,3"/>
           <text x="300" y="315" text-anchor="middle" font-family="monospace" font-size="11" fill="#888884">結果を統合して最終回答を生成</text>
           <line x1="300" y1="264" x2="300" y2="293" stroke="#888884" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr-multi-rev)"/>
+
+          <!-- Legend -->
+          <line x1="458" y1="305" x2="483" y2="305" stroke="#FF3D00" stroke-width="1.5"/>
+          <polygon points="481,301 489,305 481,309" fill="#FF3D00"/>
+          <text x="492" y="309" font-family="monospace" font-size="9" fill="#FF3D00">割当</text>
+          <line x1="458" y1="322" x2="483" y2="322" stroke="#888884" stroke-width="1" stroke-dasharray="4,3"/>
+          <polygon points="481,318 489,322 481,326" fill="#888884"/>
+          <text x="492" y="326" font-family="monospace" font-size="9" fill="#888884">返却</text>
         </svg>
         <figcaption>図3: Orchestrator + Workersパターン — 中央のオーケストレーターが専門化されたワーカーエージェントを調整する</figcaption>
       </div>

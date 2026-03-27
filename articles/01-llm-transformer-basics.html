@@ -132,21 +132,90 @@ t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
         たとえば「東京の天気は」というトークン列が入力された場合、モデルは次のトークンとして「晴れ」「雨」「曇り」「今日」などに高い確率を割り当て、「バナナ」や「量子」には低い確率を割り当てます。これは単純なパターンマッチングではなく、文脈全体を考慮した確率推定です。
       </p>
 
-      <!-- Image Placeholder -->
-      <figure>
-        <div class="img-placeholder">
-          <!-- IMAGE GENERATION PROMPT (Midjourney / DALL-E):
-               A minimalist technical diagram on a pure dark (#0D0D0D) background showing
-               text tokenization flow. Input: raw Japanese text string. Arrow in bright orange
-               (#FF3D00) pointing right. Tokenizer box with monospace label. Output: array of
-               numbered token boxes. Second orange arrow pointing to a neural network block
-               (abstract layered rectangles). Final output: probability distribution bar chart
-               with orange highlight on top token. Terminal brutalist aesthetic, crisp grid lines
-               in muted gray, no gradients, high contrast. Aspect ratio 16:9.
-          -->
-        </div>
+      <div class="diagram">
+        <svg viewBox="0 0 760 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLMの入出力概念図：テキスト→トークン化→LLM→確率分布">
+          <defs>
+            <marker id="arr-tok" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
+            </marker>
+          </defs>
+          <rect width="760" height="160" fill="#0D0D0D"/>
+
+          <!-- Input text -->
+          <rect x="14" y="55" width="110" height="50" rx="6" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="69" y="76" text-anchor="middle" font-family="monospace" font-size="10" fill="#888884">入力テキスト</text>
+          <text x="69" y="94" text-anchor="middle" font-family="monospace" font-size="12" fill="#E8E8E2">東京の天気は</text>
+
+          <!-- Arrow 1 -->
+          <line x1="124" y1="80" x2="148" y2="80" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-tok)"/>
+
+          <!-- Tokenizer -->
+          <rect x="150" y="55" width="90" height="50" rx="6" fill="#1A1A1A" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="195" y="76" text-anchor="middle" font-family="monospace" font-size="10" fill="#FF3D00">Tokenizer</text>
+          <text x="195" y="94" text-anchor="middle" font-family="monospace" font-size="9" fill="#888884">テキスト分割</text>
+
+          <!-- Arrow 2 -->
+          <line x1="240" y1="80" x2="264" y2="80" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-tok)"/>
+
+          <!-- Token boxes -->
+          <rect x="266" y="58" width="36" height="28" rx="3" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="284" y="77" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">東京</text>
+          <rect x="306" y="58" width="28" height="28" rx="3" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="320" y="77" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">の</text>
+          <rect x="338" y="58" width="36" height="28" rx="3" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="356" y="77" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">天気</text>
+          <rect x="378" y="58" width="28" height="28" rx="3" fill="#1A1A1A" stroke="#888884" stroke-width="1"/>
+          <text x="392" y="77" text-anchor="middle" font-family="monospace" font-size="11" fill="#E8E8E2">は</text>
+          <!-- Token IDs -->
+          <text x="284" y="98" text-anchor="middle" font-family="monospace" font-size="8" fill="#555551">1042</text>
+          <text x="320" y="98" text-anchor="middle" font-family="monospace" font-size="8" fill="#555551">9</text>
+          <text x="356" y="98" text-anchor="middle" font-family="monospace" font-size="8" fill="#555551">3871</text>
+          <text x="392" y="98" text-anchor="middle" font-family="monospace" font-size="8" fill="#555551">11</text>
+
+          <!-- Arrow 3 -->
+          <line x1="408" y1="80" x2="432" y2="80" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-tok)"/>
+
+          <!-- LLM block -->
+          <rect x="434" y="30" width="100" height="100" rx="8" fill="#1A1A1A" stroke="#FF3D00" stroke-width="2"/>
+          <text x="484" y="72" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#FF3D00">LLM</text>
+          <text x="484" y="90" text-anchor="middle" font-family="monospace" font-size="9" fill="#888884">Transformer</text>
+          <text x="484" y="105" text-anchor="middle" font-family="monospace" font-size="9" fill="#888884">数十億パラメータ</text>
+
+          <!-- Arrow 4 -->
+          <line x1="534" y1="80" x2="558" y2="80" stroke="#FF3D00" stroke-width="1.5" marker-end="url(#arr-tok)"/>
+
+          <!-- Probability distribution bars -->
+          <text x="620" y="28" text-anchor="middle" font-family="monospace" font-size="9" fill="#888884">次トークン確率</text>
+          <!-- Bar: 晴れ (highest) -->
+          <rect x="562" y="40" width="90" height="14" rx="2" fill="#FF3D00"/>
+          <text x="558" y="51" text-anchor="end" font-family="monospace" font-size="10" fill="#FF3D00">晴れ</text>
+          <text x="656" y="51" font-family="monospace" font-size="9" fill="#FF3D00">38%</text>
+          <!-- Bar: 今日 -->
+          <rect x="562" y="58" width="60" height="14" rx="2" fill="#2A2A2A" stroke="#888884" stroke-width="0.5"/>
+          <text x="558" y="69" text-anchor="end" font-family="monospace" font-size="10" fill="#888884">今日</text>
+          <text x="626" y="69" font-family="monospace" font-size="9" fill="#888884">25%</text>
+          <!-- Bar: 曇り -->
+          <rect x="562" y="76" width="44" height="14" rx="2" fill="#2A2A2A" stroke="#888884" stroke-width="0.5"/>
+          <text x="558" y="87" text-anchor="end" font-family="monospace" font-size="10" fill="#888884">曇り</text>
+          <text x="610" y="87" font-family="monospace" font-size="9" fill="#888884">18%</text>
+          <!-- Bar: 雨 -->
+          <rect x="562" y="94" width="30" height="14" rx="2" fill="#2A2A2A" stroke="#888884" stroke-width="0.5"/>
+          <text x="558" y="105" text-anchor="end" font-family="monospace" font-size="10" fill="#888884">雨</text>
+          <text x="596" y="105" font-family="monospace" font-size="9" fill="#888884">12%</text>
+          <!-- Bar: ... -->
+          <rect x="562" y="112" width="18" height="14" rx="2" fill="#1A1A1A" stroke="#444440" stroke-width="0.5"/>
+          <text x="558" y="123" text-anchor="end" font-family="monospace" font-size="10" fill="#555551">...</text>
+          <text x="584" y="123" font-family="monospace" font-size="9" fill="#555551">7%</text>
+
+          <!-- Stage labels -->
+          <text x="69" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#555551">① 入力</text>
+          <text x="195" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#555551">② 分割</text>
+          <text x="335" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#555551">③ トークン列</text>
+          <text x="484" y="148" text-anchor="middle" font-family="monospace" font-size="9" fill="#555551">④ 変換・推論</text>
+          <text x="620" y="143" text-anchor="middle" font-family="monospace" font-size="9" fill="#555551">⑤ 確率分布</text>
+        </svg>
         <figcaption>図1: LLMへの入力と出力の概念図 — テキストがトークン列に変換され、次トークンの確率分布として出力される</figcaption>
-      </figure>
+      </div>
 
       <!-- ============================================================
            Section 2: トランスフォーマーアーキテクチャ
