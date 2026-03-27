@@ -464,38 +464,8 @@
     └── rca-analysis.v1.json</code></pre>
       </div>
 
-      <div class="code-block">
-        <div class="code-block__header">
-          <span class="code-block__lang">python — プロンプトのA/Bテスト実装例</span>
-        </div>
-        <pre><code>import json
-import hashlib
-from pathlib import Path
-
-def load_prompt(name: str, version: str = "v1") -> dict:
-    """バージョン指定でプロンプトを読み込む"""
-    path = Path(f"prompts/{name}.{version}.json")
-    return json.loads(path.read_text(encoding="utf-8"))
-
-def ab_test_prompt(request_id: str, name: str) -> dict:
-    """
-    request_id のハッシュ値でA/Bを振り分ける。
-    同一ユーザーには常に同じバージョンが当たるため体験が一貫する。
-    """
-    bucket = int(hashlib.md5(request_id.encode()).hexdigest(), 16) % 100
-    version = "v2" if bucket < 20 else "v1"  # 20%をv2に流す
-    return load_prompt(name, version)
-
-# 使用例
-prompt = ab_test_prompt(
-    request_id="user-session-abc123",
-    name="requirements/user-story-extraction"
-)
-# → 20%の確率でv2、80%でv1が返る</code></pre>
-      </div>
-
       <p>
-        プロンプトの変更を CI/CD パイプラインに組み込み、定義したテストケース（入力・期待出力のペア）でリグレッションテストを自動実行することで、プロンプト改善が既存の動作を壊していないかを継続的に確認できます。
+        プロンプトの変更を CI/CD パイプラインに組み込み、定義したテストケース（入力・期待出力のペア）でリグレッションテストを自動実行することで、プロンプト改善が既存の動作を壊していないかを継続的に確認できます。A/Bテストでは request_id のハッシュ値でバージョンを振り分けることで、同一ユーザーへの体験を一貫させられます。
       </p>
 
       <!-- Summary Box -->
