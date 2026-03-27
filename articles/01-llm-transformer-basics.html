@@ -550,31 +550,6 @@ curl https://api.example-llm.com/v1/chat/completions \
         API利用料は <strong>入力トークン数 × 入力単価 + 出力トークン数 × 出力単価</strong> で決まります。一般的に出力トークンの単価は入力の2〜4倍に設定されています（生成処理は推論負荷が高いため）。
       </p>
 
-      <div class="code-block">
-        <div class="code-block__header">
-          <span class="code-block__lang">python</span>
-        </div>
-        <pre><code># コスト試算の例（料金は変動するため必ずプロバイダーの最新情報を確認）
-def estimate_cost(
-    input_tokens: int,
-    output_tokens: int,
-    input_price_per_1m: float,   # 例: 3.0 USD/1M tokens
-    output_price_per_1m: float,  # 例: 15.0 USD/1M tokens
-) -> float:
-    input_cost  = (input_tokens  / 1_000_000) * input_price_per_1m
-    output_cost = (output_tokens / 1_000_000) * output_price_per_1m
-    return input_cost + output_cost
-
-# 例: 1000トークン入力・500トークン出力を1万回/日実行した場合
-daily_cost = estimate_cost(
-    input_tokens=1_000 * 10_000,
-    output_tokens=500 * 10_000,
-    input_price_per_1m=3.0,
-    output_price_per_1m=15.0,
-)
-print(f"日次コスト: ${daily_cost:.2f}")  # → 約$105/日</code></pre>
-      </div>
-
       <h3>レートリミットとレイテンシの考慮事項</h3>
 
       <p>

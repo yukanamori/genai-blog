@@ -395,64 +395,9 @@
 
       <h3>Embeddingの生成とベクトルDBへの格納</h3>
 
-      <div class="code-block">
-        <div class="code-block__header">
-          <span class="code-block__lang">python — Embeddingの生成とpgvectorへの格納</span>
-        </div>
-        <pre><code>from openai import OpenAI
-import psycopg2
-import json
-
-client = OpenAI()
-
-def embed_text(text: str) -> list[float]:
-    """テキストをEmbeddingベクトルに変換する"""
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text
-    )
-    return response.data[0].embedding
-
-def store_chunk(conn, chunk_id: str, content: str, metadata: dict) -> None:
-    """チャンクとそのEmbeddingをpgvectorに格納する"""
-    vector = embed_text(content)
-
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO document_chunks (id, content, metadata, embedding)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (id) DO UPDATE
-              SET content = EXCLUDED.content,
-                  metadata = EXCLUDED.metadata,
-                  embedding = EXCLUDED.embedding
-            """,
-            (chunk_id, content, json.dumps(metadata), vector)
-        )
-    conn.commit()
-
-def search_similar(conn, query: str, top_k: int = 5) -> list[dict]:
-    """クエリと意味的に近いチャンクを取得する"""
-    query_vector = embed_text(query)
-
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT id, content, metadata,
-                   1 - (embedding <=> %s::vector) AS similarity
-            FROM document_chunks
-            ORDER BY embedding <=> %s::vector
-            LIMIT %s
-            """,
-            (query_vector, query_vector, top_k)
-        )
-        rows = cur.fetchall()
-
-    return [
-        {"id": r[0], "content": r[1], "metadata": r[2], "similarity": r[3]}
-        for r in rows
-    ]</code></pre>
-      </div>
+      <p>
+        実装は Embedding API（例: <code>text-embedding-3-small</code>）でテキストをベクトルに変換し、pgvector の <code>INSERT ... ON CONFLICT DO UPDATE</code> でべき等に格納します。検索時はクエリを同じモデルでベクトル化し、<code>&lt;=&gt;</code>（コサイン距離）演算子で類似度順に取得します。
+      </p>
 
       <div class="callout callout--info">
         <p class="callout__heading">ハイブリッド検索について</p>
@@ -616,63 +561,9 @@ print(f"最小チャンクサイズ: {min(len(c) for c in chunks)}文字")</code
 
       <h3>RAGASによる評価実装</h3>
 
-      <div class="code-block">
-        <div class="code-block__header">
-          <span class="code-block__lang">python — RAGASを使ったパイプライン評価</span>
-        </div>
-        <pre><code>from datasets import Dataset
-from ragas import evaluate
-from ragas.metrics import (
-    faithfulness,
-    answer_relevancy,
-    context_precision,
-    context_recall,
-)
-
-# 評価用データセット
-# 各サンプルは question, answer, contexts, ground_truth を持つ
-eval_data = {
-    "question": [
-        "有給休暇の申請期限はいつですか？",
-        "テレワーク勤務の上限日数は？",
-    ],
-    "answer": [
-        # RAGパイプラインが生成した回答（実際には pipeline.run(q) で取得）
-        "有給休暇は取得日の3営業日前までに申請が必要です。",
-        "テレワーク勤務は月15日を上限としています。",
-    ],
-    "contexts": [
-        # 検索で取得されたチャンクリスト
-        ["就業規則第12条：有給休暇の申請は取得希望日の3営業日前までに...", ],
-        ["テレワーク勤務規程第5条：在宅勤務の上限は月15日とする...", ],
-    ],
-    "ground_truth": [
-        # 期待される正解（人手で用意するゴールドスタンダード）
-        "有給休暇は取得日の3営業日前までに申請が必要です。",
-        "テレワーク勤務は月15日を上限としています。",
-    ],
-}
-
-dataset = Dataset.from_dict(eval_data)
-
-# 評価実行
-results = evaluate(
-    dataset=dataset,
-    metrics=[
-        faithfulness,
-        answer_relevancy,
-        context_precision,
-        context_recall,
-    ],
-    llm=...,          # 評価用LLM (OpenAI GPT-4o 等)
-    embeddings=...,   # 評価用Embedding Model
-)
-
-print(results)
-# 出力例:
-# {'faithfulness': 0.92, 'answer_relevancy': 0.87,
-#  'context_precision': 0.78, 'context_recall': 0.83}</code></pre>
-      </div>
+      <p>
+        RAGAS（<code>pip install ragas</code>）は <code>question / answer / contexts / ground_truth</code> の4フィールドを持つデータセットを渡すだけで4指標をまとめて評価できます。<code>evaluate(dataset, metrics=[faithfulness, answer_relevancy, context_precision, context_recall], llm=..., embeddings=...)</code> を呼び出すと辞書形式でスコアが返ります。
+      </p>
 
       <div class="callout callout--warning">
         <p class="callout__heading">納品前のQAチェックリスト</p>
