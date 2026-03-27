@@ -26,6 +26,7 @@ jobs:
         run: |
           npm install -g playwright
           npx playwright install chromium --with-deps
+          echo "NODE_PATH=$(npm root -g)" >> $GITHUB_ENV
 
       - name: Run structure check
         run: node qa/check-structure.js
