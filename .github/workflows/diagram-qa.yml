@@ -30,14 +30,10 @@ jobs:
       - name: Run structure check
         run: node qa/check-structure.js
 
-      - name: Run visual QA (baseline mode on first run)
-        run: |
-          if [ -z "$(ls qa/screenshots/baseline/*.png 2>/dev/null)" ]; then
-            echo "No baseline found — saving baseline screenshots"
-            node qa/diagram-qa.js --baseline
-          else
-            node qa/diagram-qa.js
-          fi
+      - name: Run visual QA
+        run: node qa/diagram-qa.js
+        env:
+          CI: "true"
 
       - name: Upload screenshots on failure
         if: failure()

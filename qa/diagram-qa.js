@@ -14,7 +14,14 @@ const path = require('path');
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const PLAYWRIGHT_PATH = '/opt/node22/lib/node_modules/playwright';
+// Resolve playwright from PATH first, fall back to known local install location
+function resolvePlaywright() {
+  try { require.resolve('playwright'); return 'playwright'; } catch (_) {}
+  const local = '/opt/node22/lib/node_modules/playwright';
+  if (require('fs').existsSync(local)) return local;
+  throw new Error('playwright not found. Run: npm install -g playwright');
+}
+const PLAYWRIGHT_PATH = resolvePlaywright();
 const ROOT_DIR = path.join(__dirname, '..');
 const ARTICLES_DIR = path.join(ROOT_DIR, 'articles');
 const CSS_DIR = path.join(ROOT_DIR, 'assets', 'css');
@@ -42,6 +49,8 @@ const DIFF_MAX_RATIO = 0.02;
 
 const IS_BASELINE = process.argv.includes('--baseline');
 const SKIP_PIXEL = process.argv.includes('--no-pixel');
+// In CI, skip baseline diff to avoid false positives from cross-platform font/rendering differences
+const SKIP_DIFF = process.argv.includes('--no-diff') || (process.env.CI === 'true');
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -267,7 +276,7 @@ async function main() {
 
           if (IS_BASELINE) {
             fs.writeFileSync(baselinePath, pngBuffer);
-          } else {
+          } else if (!SKIP_DIFF) {
             diffResult = compareBaseline(pngBuffer, baselinePath);
           }
         }
