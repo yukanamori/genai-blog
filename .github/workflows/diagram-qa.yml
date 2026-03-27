@@ -1,0 +1,56 @@
+name: Diagram Visual QA
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "articles/**"
+      - "assets/css/**"
+  pull_request:
+    paths:
+      - "articles/**"
+      - "assets/css/**"
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install -g playwright
+          npx playwright install chromium --with-deps
+
+      - name: Run structure check
+        run: node qa/check-structure.js
+
+      - name: Run visual QA (baseline mode on first run)
+        run: |
+          if [ -z "$(ls qa/screenshots/baseline/*.png 2>/dev/null)" ]; then
+            echo "No baseline found — saving baseline screenshots"
+            node qa/diagram-qa.js --baseline
+          else
+            node qa/diagram-qa.js
+          fi
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagram-screenshots
+          path: qa/screenshots/
+          retention-days: 7
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagram-qa-report
+          path: qa/screenshots/report.json
+          retention-days: 30
