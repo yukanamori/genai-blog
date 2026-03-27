@@ -133,7 +133,7 @@ t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
       </p>
 
       <div class="diagram">
-        <svg viewBox="0 0 760 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLMの入出力概念図：テキスト→トークン化→LLM→確率分布">
+        <svg viewBox="0 0 760 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLMの入出力概念図：テキスト→トークン化→LLM→確率分布">
           <defs>
             <marker id="arr-tok" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6" fill="#FF3D00"/>
@@ -239,58 +239,50 @@ t̂ₙ = argmax P(tₙ | t₁, t₂, ..., tₙ₋₁)</code></pre>
       <!-- Attention SVG Diagram -->
       <div class="diagram">
         <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="アテンション可視化：猫が魚を食べた">
-          <style>
-            .attn-token { font-family: 'JetBrains Mono', monospace; font-size: 14px; fill: #E8E8E2; }
-            .attn-box { rx: 4; ry: 4; }
-            .attn-line-high { stroke: #FF3D00; stroke-width: 2.5; opacity: 0.9; }
-            .attn-line-mid  { stroke: #FF3D00; stroke-width: 1.2; opacity: 0.45; }
-            .attn-line-low  { stroke: #888884; stroke-width: 0.8; opacity: 0.3; }
-            .attn-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #888884; }
-          </style>
-
           <!-- Background -->
           <rect width="600" height="200" fill="#0D0D0D"/>
 
-          <!-- Token boxes (y=130) -->
-          <!-- 猫 -->
-          <rect x="40" y="110" width="60" height="32" class="attn-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
-          <text x="70" y="131" class="attn-token" text-anchor="middle">猫が</text>
+          <!-- Token boxes -->
+          <!-- 猫が -->
+          <rect x="40" y="110" width="60" height="32" rx="4" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="70" y="131" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#E8E8E2">猫が</text>
 
-          <!-- 魚 -->
-          <rect x="175" y="110" width="60" height="32" class="attn-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
-          <text x="205" y="131" class="attn-token" text-anchor="middle">魚を</text>
+          <!-- 魚を -->
+          <rect x="175" y="110" width="60" height="32" rx="4" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="205" y="131" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#E8E8E2">魚を</text>
 
           <!-- 食べた -->
-          <rect x="310" y="110" width="80" height="32" class="attn-box" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
-          <text x="350" y="131" class="attn-token" text-anchor="middle">食べた</text>
+          <rect x="310" y="110" width="80" height="32" rx="4" fill="#1C1C1C" stroke="#FF3D00" stroke-width="1.5"/>
+          <text x="350" y="131" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#E8E8E2">食べた</text>
 
           <!-- [EOS] -->
-          <rect x="460" y="110" width="80" height="32" class="attn-box" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
-          <text x="500" y="131" class="attn-label" text-anchor="middle">[EOS]</text>
+          <rect x="460" y="110" width="80" height="32" rx="4" fill="#1C1C1C" stroke="#888884" stroke-width="1"/>
+          <text x="500" y="131" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#888884">[EOS]</text>
 
-          <!-- Attention arcs (curves above tokens) representing "食べた" attending to others -->
+          <!-- Attention arcs -->
           <!-- 食べた → 猫が (high) -->
-          <path d="M 350,110 Q 210,40 70,110" fill="none" class="attn-line-high"/>
+          <path d="M 350,110 Q 210,40 70,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
           <!-- 食べた → 魚を (high) -->
-          <path d="M 350,110 Q 280,60 205,110" fill="none" class="attn-line-high"/>
+          <path d="M 350,110 Q 280,60 205,110" fill="none" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
           <!-- 猫が → 魚を (mid) -->
-          <path d="M 70,110 Q 138,70 205,110" fill="none" class="attn-line-mid"/>
+          <path d="M 70,110 Q 138,70 205,110" fill="none" stroke="#FF3D00" stroke-width="1.2" opacity="0.45"/>
           <!-- 魚を → EOS (low) -->
-          <path d="M 205,110 Q 352,80 500,110" fill="none" class="attn-line-low"/>
+          <path d="M 205,110 Q 352,80 500,110" fill="none" stroke="#888884" stroke-width="0.8" opacity="0.3"/>
 
-          <!-- Arrowheads on high-attention lines at 猫が end -->
+          <!-- Arrowheads on high-attention lines -->
+          <!-- at 猫が end -->
           <polygon points="70,110 63,100 78,100" fill="#FF3D00" opacity="0.9"/>
           <!-- at 魚を end (from 食べた) -->
           <polygon points="205,110 198,100 213,100" fill="#FF3D00" opacity="0.9"/>
 
           <!-- Legend -->
-          <line x1="40" y1="175" x2="70" y2="175" class="attn-line-high"/>
-          <text x="76" y="179" class="attn-label">高い注意重み</text>
-          <line x1="180" y1="175" x2="210" y2="175" class="attn-line-low"/>
-          <text x="216" y="179" class="attn-label">低い注意重み</text>
+          <line x1="40" y1="175" x2="70" y2="175" stroke="#FF3D00" stroke-width="2.5" opacity="0.9"/>
+          <text x="76" y="179" font-family="'JetBrains Mono', monospace" font-size="10" fill="#888884">高い注意重み</text>
+          <line x1="180" y1="175" x2="210" y2="175" stroke="#888884" stroke-width="0.8" opacity="0.3"/>
+          <text x="216" y="179" font-family="'JetBrains Mono', monospace" font-size="10" fill="#888884">低い注意重み</text>
 
           <!-- Diagram title -->
-          <text x="300" y="20" class="attn-label" text-anchor="middle" fill="#E8E8E2" font-size="12">Attention可視化：「食べた」が参照するトークン</text>
+          <text x="300" y="20" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#E8E8E2">Attention可視化：「食べた」が参照するトークン</text>
         </svg>
         <figcaption>図2: Attentionの概念図 — 「食べた」は「猫が」と「魚を」に強く注目する。オレンジの線が高注意重みを示す</figcaption>
       </div>
