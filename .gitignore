@@ -1,0 +1,6 @@
+# QA screenshots (runtime output — not committed)
+qa/screenshots/*.png
+qa/screenshots/report.json
+
+# Baseline screenshots ARE committed (kept for regression detection)
+!qa/screenshots/baseline/*.png
